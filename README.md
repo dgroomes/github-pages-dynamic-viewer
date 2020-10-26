@@ -1,17 +1,12 @@
-# react-playground
+# github-pages-dynamic-viewer
 
-📚 Learning and exploring React <https://reactjs.org/>.
+WORK IN PROGRESS
 
-* Project source: <https://github.com/dgroomes/react-playground>
-* GitHub Pages page: <https://dgroomes.github.io/react-playground/>
+🛠 Dynamically load Markdown for a GitHub project in a simple `index.html` page hosted in [GitHub Pages](https://pages.github.com/).
 
 ---
 
-This project demonstrates using React, JSX and Markdown with no build tooling. React, Babel and Marked.js are loaded as
-script tags. Babel transpiles the ESNext source code on-the-fly in the browser. Likewise, Marked.js compiles the source
-Markdown files into HTML on-the-fly in the browser.
-
-This project was originally scaffolded using the example project <https://reactjs.org/docs/add-react-to-a-website.html>. 
+This is forked from my other project <https://github.com/dgroomes/react-playground>.
 
 ### Instructions
 
