@@ -2,7 +2,7 @@
  * A content browser for the source code in the GitHub repository.
  *
  * Shows a directory listing on the left-hand side of the page that includes all ".md" files in the git repo. The files
- * can be navigated to by clicking on them. The contents of the currently opened file shows on the right-hand side.
+ * can be navigated to by clicking on them. The contents of all files show on the right-hand side (NOT YET IMPLEMENTED).
  */
 class SourceBrowser extends React.Component {
 
@@ -39,7 +39,7 @@ class SourceBrowser extends React.Component {
             .then(json => {
                 let dirListingMdFiles = json.filter(file => /.+\.md$/.test(file.name))
                 this.setState({directoryListing: dirListingMdFiles})
-                console.debug(`Directory listing loaded with ${dirListingMdFiles.length} files after filtering`);
+                console.log(`Directory listing loaded with ${dirListingMdFiles.length} files after filtering`);
                 return dirListingMdFiles;
             });
     }
@@ -70,7 +70,7 @@ class SourceBrowser extends React.Component {
      *  4. Add the HTML to the SourceBrowser component
      */
     loadDocument(documentName) {
-        fetch(documentName)
+        return fetch(documentName)
             .then(response => {
                 if (response.status === 404) {
                     return `(404) Document '${documentName}' was not found`
@@ -82,57 +82,26 @@ class SourceBrowser extends React.Component {
             })
             .then(markown => {
                 let html = marked(markown);
-                this.setState({ pageName: documentName, pageContent: html})
+                this.setState({pageName: documentName, pageContent: html})
             })
             .catch(err => {
-                this.setState({ pageName: documentName, pageContent: "❌ Something went wrong. Failed to load document." })
-            })
-        ;
+                this.setState({pageName: documentName, pageContent: "❌ Something went wrong. Failed to load document."})
+            });
     }
 
     /**
-     * "User-mode" initialization stuff. I don't totally follow the React lifecycle but I think this is the right place
-     * to do initialization stuff for application code because this function is called *after* the React initialization
-     * stuff is done (I think...).
-     *
-     * In other words, this function is for "user"(or, "application")-level initialization stuff which can happen after
-     * the "system"(or, "React")-level initialization stuff has happened. That's my mental model at least.
-     *
-     * In particular, the initialization stuff includes:
-     *   * Load the directory listing
-     *   * Register a hash change event handler to handle navigation
-     *
-     * There is a *second phase* of initialization that kicks off after the directory listing is loaded. This phase
-     * determines the actual document that will be rendered on the page (a so-called "confirmed document") based on a
-     * combination of the URL hash (if it exists), a hard-coded "default document" and the directory listing. It loads the
-     * "confirmed document" and renders its content on the page.
+     * "User-mode" initialization stuff that happens after the React initialization stuff happens. Loads the directory
+     * listing, and then loads all documents given by the directory listing.
      */
     componentDidMount() {
-        let promise = this.loadDirectoryListing();
-
-        let targetDocument;
-        if (window.location.hash === "") {
-            console.debug(`On initial page load, found that no specific target document was requested in the URL hash. Will navigate to the 'default page' ${window.config.defaultPage}`);
-            targetDocument = window.config.defaultPage;
-        } else {
-            console.debug(`On initial page load, found that the hash was non-empty: ${window.location.hash}. Will try to navigate to it.`);
-            targetDocument = window.location.hash.substring(1); // remove the leading '#'
-        }
-
-        promise.then(dirListingFiles => {
-            let currentUrlHashValue = window.location.hash.substring(1); // remove the leading '#'
-            if (currentUrlHashValue === targetDocument) {
-                console.debug(`Found that the URL hash value ('${currentUrlHashValue}') is already equal to the 'target document' ('${targetDocument}'). Will *not* change the hash but instead will the document.`);
-                this.loadDocument(targetDocument)
-            } else { // When we need to load a default page
-                window.location.hash = targetDocument;
-            }
-        });
-        window.onhashchange = (ev => {
-            console.log(`[SourceBrowser] Hash change event detected. newUrl=${ev.newURL}`);
-            let targetDocument = window.location.hash.substring(1); // remove the leading '#'
-            this.loadDocument(targetDocument);
-        });
+        this.loadDirectoryListing()
+            .then(dirListingFiles => {
+                console.log("Loading all documents...");
+                let promises = dirListingFiles.map(markdownDocument => this.loadDocument(markdownDocument.path));
+                Promise.all(promises).then(values => {
+                    console.log("All documents have loaded.")
+                });
+            });
     }
 
     render() {
@@ -148,7 +117,8 @@ class SourceBrowser extends React.Component {
                 </div>
             </div>
             {/* Danger! "dangerouslySetInnerHTML" */}
-            <div id="page-content" dangerouslySetInnerHTML={{__html: this.state.pageContent}} className="markdown-body"/>
+            <div id="page-content" dangerouslySetInnerHTML={{__html: this.state.pageContent}}
+                 className="markdown-body"/>
             <hr/>
         </div>;
     }
