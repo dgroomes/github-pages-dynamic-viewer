@@ -2,15 +2,14 @@
  * A content browser for the source code in the GitHub repository.
  *
  * Shows a directory listing on the left-hand side of the page that includes all ".md" files in the git repo. The files
- * can be navigated to by clicking on them. The contents of all files show on the right-hand side (NOT YET IMPLEMENTED).
+ * can be navigated to by clicking on them (NOT YET IMPLEMENTED). The contents of all files show on the right-hand side.
  */
 class SourceBrowser extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            pageName: window.config.loadingMessage,
-            pageContent: window.config.loadingMessage,
+            documents: [],
             directoryListing: []
         };
         // According to https://reactjs.org/docs/handling-events.html
@@ -67,7 +66,7 @@ class SourceBrowser extends React.Component {
      *  1. Load the document source file from the root of the repo
      *  2. Handle unsuccessful responses
      *  3. Convert the Markdown source to HTML using marked.js
-     *  4. Add the HTML to the SourceBrowser component
+     *  4. Append the HTML to the SourceBrowser component
      */
     loadDocument(documentName) {
         return fetch(documentName)
@@ -82,11 +81,28 @@ class SourceBrowser extends React.Component {
             })
             .then(markown => {
                 let html = marked(markown);
-                this.setState({pageName: documentName, pageContent: html})
+                let newDocument = {
+                    path: documentName,
+                    html: html
+                }
+                this._appendDocument(newDocument)
             })
             .catch(err => {
-                this.setState({pageName: documentName, pageContent: "❌ Something went wrong. Failed to load document."})
+                let html = `❌ Something went wrong. Failed to load document '${documentName}'`;
+                let newDocument = {
+                    path: documentName,
+                    html: html
+                }
+                this._appendDocument(newDocument)
             });
+    }
+
+    /**
+     * Helper method to append a document to the 'documents' list.
+     */
+    _appendDocument(document) {
+        let documents = this.state.documents.concat(document)
+        this.setState({documents: documents})
     }
 
     /**
@@ -107,7 +123,6 @@ class SourceBrowser extends React.Component {
     render() {
         return <div>
             <div id="sidebar">
-                <h1 id="page-name">{this.state.pageName}</h1>
                 <div id="directory-listing">
                     <ul>{this.state.directoryListing.map(file => {
                         // NOTE: React really wants list items to have a key. So, assigning 'path' to the key because it
@@ -116,10 +131,15 @@ class SourceBrowser extends React.Component {
                     })}</ul>
                 </div>
             </div>
-            {/* Danger! "dangerouslySetInnerHTML" */}
-            <div id="page-content" dangerouslySetInnerHTML={{__html: this.state.pageContent}}
-                 className="markdown-body"/>
-            <hr/>
+
+            {this.state.documents.map(document => {
+                // NOTE: React really wants list items to have a key. So, assigning 'path' to the key because it
+                // is a unique identifier (rather, a key!).
+                return <div id="page-content"
+                            key={document.path}
+                            dangerouslySetInnerHTML={{__html: document.html}}
+                            className="markdown-body"/>
+            })}
         </div>;
     }
 }

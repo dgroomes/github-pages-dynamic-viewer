@@ -116,7 +116,7 @@ class GitHubContentApiEmulationHandler(http.server.SimpleHTTPRequestHandler):
 
 
 httpd = http.server.HTTPServer((BIND_ADDRESS, PORT), GitHubContentApiEmulationHandler)
-print("Serving react-playground at http://%s:%s !" % (BIND_ADDRESS, PORT))
+print("Serving at http://%s:%s !" % (BIND_ADDRESS, PORT))
 try:
     httpd.serve_forever()
 except KeyboardInterrupt:

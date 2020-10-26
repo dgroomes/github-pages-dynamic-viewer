@@ -6,7 +6,5 @@
  */
 window.config = {
     user: "dgroomes",
-    repo: "react-playground",
-    defaultPage: "README.md",
-    loadingMessage: "Please, please wait!"
+    repo: "github-pages-dynamic-viewer"
 }
