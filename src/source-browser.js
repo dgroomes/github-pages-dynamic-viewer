@@ -121,25 +121,24 @@ class SourceBrowser extends React.Component {
     }
 
     render() {
-        return <div>
-            <div id="sidebar">
-                <div id="directory-listing">
-                    <ul>{this.state.directoryListing.map(file => {
-                        // NOTE: React really wants list items to have a key. So, assigning 'path' to the key because it
-                        // is a unique identifier (rather, a key!).
-                        return <li key={file.path}><a href={"#" + file.path}>{file.name}</a></li>;
-                    })}</ul>
-                </div>
-            </div>
+        return React.createElement('div', null,
+            React.createElement('div', {"id": "sidebar"},
+                React.createElement('div', {"id": "directory-listing"}, React.createElement('ul', null, this.state.directoryListing.map(file => {
+                    // NOTE: React really wants list items to have a key. So, assigning 'path' to the key because it
+                    // is a unique identifier (rather, a key!).
+                    return React.createElement('li', {"key": file.path},
+                        React.createElement('a', {"href": "#" + file.path}, file.name));
+                })))),
 
-            {this.state.documents.map(document => {
+            this.state.documents.map(document => {
                 // NOTE: React really wants list items to have a key. So, assigning 'path' to the key because it
                 // is a unique identifier (rather, a key!).
-                return <div id="page-content"
-                            key={document.path}
-                            dangerouslySetInnerHTML={{__html: document.html}}
-                            className="markdown-body"/>
-            })}
-        </div>;
+                return React.createElement('div', {
+                    "id": "page-content",
+                    "key": document.path,
+                    "dangerouslySetInnerHTML": {__html: document.html},
+                    "className": "markdown-body"
+                });
+            }));
     }
 }
