@@ -14,15 +14,8 @@
     <script src="src/config.js"></script>
     <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone@7.9.6/babel.min.js"></script>
-    <!-- Use Babel to *load* (and transpile) JSX source code. We are using in-browser JSX (no build step)! This works
-     because we have loaded the "babel/standalone" library and have specified the source type of "text/babel" in the
-     script tag. The browser will key off the "text/babel" type and then hook into the Babel standalone component to
-     to transpile the JSX source code into browser compatible JS source code. Then, the browser will load and
-     execute that JS source code. Pretty cool!
-    -->
     <script src="src/source-browser.js"></script>
-    <script type="text/babel" src="src/app.jsx"></script>
+    <script src="src/app.js"></script>
     <script src="https://unpkg.com/marked@1.0.0/marked.min.js"></script>
   </body>
 </html>

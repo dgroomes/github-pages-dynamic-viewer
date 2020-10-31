@@ -3,8 +3,8 @@
 General clean ups, TODOs and things I wish to implement for this project:
 
 * Replace all dependencies with vanilla JavaScript (this project is designed to offer a "zero-dependencies" tool)
-   * IN PROGRESS Remove babel
-     * Step one of removing babel is to remove our JSX source code. See [React without JSX](https://reactjs.org/docs/react-without-jsx.html) 
+   * DONE Remove babel
+     * DONE Step one of removing babel is to remove our JSX source code. See [React without JSX](https://reactjs.org/docs/react-without-jsx.html) 
    * Remove React
    * Remove Marked.js. Instead, we can use GitHub's API to render the markdown
 * DONE Load all documents
