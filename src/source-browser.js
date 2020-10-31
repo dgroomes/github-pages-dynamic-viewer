@@ -121,19 +121,19 @@ class SourceBrowser extends React.Component {
     }
 
     render() {
-        return React.createElement('div', null,
-            React.createElement('div', {"id": "sidebar"},
-                React.createElement('div', {"id": "directory-listing"}, React.createElement('ul', null, this.state.directoryListing.map(file => {
+        return myCreateElement('div', null,
+            myCreateElement('div', {"id": "sidebar"},
+                myCreateElement('div', {"id": "directory-listing"}, myCreateElement('ul', null, this.state.directoryListing.map(file => {
                     // NOTE: React really wants list items to have a key. So, assigning 'path' to the key because it
                     // is a unique identifier (rather, a key!).
-                    return React.createElement('li', {"key": file.path},
-                        React.createElement('a', {"href": "#" + file.path}, file.name));
+                    return myCreateElement('li', {"key": file.path},
+                        myCreateElement('a', {"href": "#" + file.path}, file.name));
                 })))),
 
             this.state.documents.map(document => {
                 // NOTE: React really wants list items to have a key. So, assigning 'path' to the key because it
                 // is a unique identifier (rather, a key!).
-                return React.createElement('div', {
+                return myCreateElement('div', {
                     "id": "page-content",
                     "key": document.path,
                     "dangerouslySetInnerHTML": {__html: document.html},
