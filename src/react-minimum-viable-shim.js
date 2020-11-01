@@ -36,15 +36,16 @@ window.untetheredElements2 = null // these elements are designated to be tethere
  * be *sibling* elements as the parent element.
  */
 function myCreateElement(tagName, options, ...otherArgs) {
+    let useReact = true
+    let el
     if (tagName === 'a') {
+        useReact = false
         let content = otherArgs[0];
         let href = options.href;
         console.log(`Creating an element ('a') *without* React. content='${content} href=${href}'`)
-        let el = document.createElement('a')
+        el = document.createElement('a')
         el.href = href;
         el.innerHTML = content;
-        window.untetheredElements.push(el)
-        return;
     }
 
     // Now we're getting more complicated than when we just had to deal with the 'a' tag. The 'a' element is a
@@ -61,12 +62,9 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // attach many of them to a common shared parent element. The singular 'window.untetheredElement' mechanism won't
     // accommodate this. So, let's introduce a 'window.untetheredElements' array variable.
     if (tagName === 'li') {
+        useReact = false
         console.log("Creating an element ('li') *without* React.")
-        let el = document.createElement('li');
-        let child = window.untetheredElements.pop();
-        el.appendChild(child);
-        window.untetheredElements.push(el)
-        return;
+        el = document.createElement('li');
     }
 
     // Now, onto the really hard one, the 'div' tag! The div tag is so generic: it can be inside of other elements and
@@ -81,13 +79,28 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // UPDATE: double woops, we should implement 'ul' defore 'div' because it is the closest ancestor to 'li'. I jumped
     // ahead on accident and didn't even realize it.
     if (false && tagName === 'div' && options !== null && options["opt-in"]) {
+        useReact = true
         console.log("Creating an element ('div') *without* React.")
-        let el = document.createElement('div')
+        el = document.createElement('div')
         if (window.untetheredElements.length > 0) {
             el.append(...window.untetheredElements)
         }
         window.untetheredElements = [el]
-        return;
+    }
+
+    // The common code for the creation of elements *without* React. This boils down to the logic needed for tracking
+    // untethered elements (e.g. parent element identification, varargs counting, etc.)
+    //
+    // This uses a naive implementation to tether any existing untethered elements: it just checks if there exist any
+    // and appends them to the newly created element. This is wrong. The tethering logic should be pushed into the
+    // `tetherElements` function which should be implemented with more sophistication.
+    if (!useReact) {
+        if (window.untetheredElements.length > 0) {
+            let child = window.untetheredElements.pop();
+            el.appendChild(child);
+        }
+        window.untetheredElements.push(el)
+        return
     }
 
     if (options == null) {

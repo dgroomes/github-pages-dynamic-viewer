@@ -21,3 +21,4 @@ General clean ups, TODOs and things I wish to implement for this project:
   think it will. But this functionality needs to work because its design will be used as the basis for handling `<div>`
   elements and beyond in `myCreateElement`. I will use the new "ConfigurationListing" component to create `<li>` 
   elements without their own child elements. The `<li>` elements will just be text.
+* IN PROGRESS Re-write the "parent element identification" and tethering logic to be robust. 
