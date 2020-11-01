@@ -22,7 +22,7 @@ General clean ups, TODOs and things I wish to implement for this project:
   elements and beyond in `myCreateElement`. I will use the new "ConfigurationListing" component to create `<li>` 
   elements without their own child elements. The `<li>` elements will just be text.
 * Re-write the "parent element identification" and tethering logic to be robust. 
-* De-react `<ul>` element creation
+* DONE De-react `<ul>` element creation
 * OBSOLETED Solve the "how many expected children are there?" problem
   * We've gotten pretty far by returning void in the `myCreateElement` function, but I think model fundamentally doesn't
     work. It would solve our problems if we could make this function actually return the elements that were created.

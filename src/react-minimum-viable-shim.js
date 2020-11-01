@@ -33,7 +33,7 @@ React.createElement = myCreateElement
  * there must be some global way I could hook into React to wire in my own frameworky code, but I don't have enough time
  * to research that right now.
  *
- * Cases supported: anchor tags (`<a>`), list item tags (`<li>`)
+ * Cases supported: anchor tags (`<a>`), list item tags (`<li>`), unordered list tags (`<ul>`)
  *
  * @return either the React-created element or the vanilla JS-created element
  */
@@ -64,8 +64,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
         el = document.createElement('li');
     }
 
-    // WORK IN PROGRESS
-    if (false && tagName === 'ul') {
+    if (tagName === 'ul') {
         useReact = false
         isAParentNode = otherArgs.length > 0 // although... by definition this is a "parent node" right? Of course when there happen to be no children than it is not a parent, but by design a "unordered list" element is supposed to contain children
         console.log("Creating an element ('ul') *without* React.")
@@ -78,8 +77,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // How do we possibly do this? Well, let's cheat and isolate the creation of 'div' tags to only those that opt-in.
     // We will look for the field 'opt-in' in the 'options' argument.
     //
-    // NOT YET IMPLEMENTED. Skipping this with a 'false' check because this doesn't work yet. I need to restructure the
-    // 'untethered' model so it is more consolidated and easy to understand.
+    // NOT YET IMPLEMENTED.
     //
     // UPDATE: double woops, we should implement 'ul' defore 'div' because it is the closest ancestor to 'li'. I jumped
     // ahead on accident and didn't even realize it.
@@ -95,12 +93,14 @@ function myCreateElement(tagName, options, ...otherArgs) {
     if (!useReact) {
         if (isAParentNode) { // can probably factor out "isAParentNode"
             console.log(`Detected that this is a parent node (${tagName}). Tethering the child elements now.`)
-            // We want to tether any children elements (specified by the "otherArgs" argument) to this element but we
-            // are unable to tether React elements because React elements aren't real elements yet. I don't think this
-            // toy app has this problem as of right now, but I will write some explicit warning logging to help me in
-            // the future if I run into this problem.
-            for (let i = 0; i < otherArgs.length; i++) {
-                let child = otherArgs[i]
+            // If any of the child elements are actually an array of elements, then they need to be flattened
+            let children = otherArgs.flat()
+            for (let i = 0; i < children.length; i++) {
+                let child = children[i]
+                // We want to tether any children elements (specified by the "otherArgs" argument) to this element but we
+                // are unable to tether React elements because React elements aren't real elements yet. I don't think this
+                // toy app has this problem as of right now, but I will write some explicit warning logging to help me in
+                // the future if I run into this problem.
                 if (React.isValidElement(child)) {
                     console.warn(`Detected a React element while executing the tethering process. React elements can't be attached to DOM as is. Skipping it. (TODO enhance the tethering process to accommodate React elements).`)
                 } else {
