@@ -32,4 +32,11 @@ General clean ups, TODOs and things I wish to implement for this project:
     with a facade function which will let us easily associate parent elements to children elements using the return
     value from `myCreateElement` function. This is convenient and will make for much easier to understand code. Next steps
     are to re-implement the existing framework to do "parent/child association via return value"
-* IN PROGRESS Re-implement the "parent/child association" code to use the return value from `myCreateElement`
+* DONE Re-implement the "parent/child association" code to use the return value from `myCreateElement`
+  * note: I think the "untethered element" tracking can be mostly removed. At least, the tracking of untethered elements
+    can be delayed to the last moment, when the "legal elements" check happens before calling the original
+    `React.createElement` function. 
+  * note: unfortunately, the array handling code is a little convoluted. It's a neat feature of React, but it requires extra
+    handling in the framework. In my case I chose to duplicate the handling code for non-arrays with the handling code
+    for arrays instead of getting too abstract and frameworky. "Non-frameworky" is the whole spirit of this application
+    after all because we are trying to remove the framework (React)!

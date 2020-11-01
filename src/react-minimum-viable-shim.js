@@ -4,8 +4,7 @@
 // isn't much of an application as it is a simple web page that uses a bit of React features).
 
 window.indexCounter = 0
-window.untetheredElements = []
-window.untetheredElements2 = null // these elements are designated to be tethered after the React lifecycle is done. Still, this untethered stuff needs to be consolidated more
+window.untetheredElements = null // Elements tracked in this variable will be tethered to the DOM after the React lifecycle is done. This is a briding mechanism between React and vanilla JS.
 
 // Re-define React.createElement
 // Facade the original implementation with our own myCreateElement function
@@ -58,14 +57,6 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // will have elements inside of it (again, in the case of this app) so we have to coordinate the creation and
     // appending of the 'li' element's child elements with the creation and appending of the 'li' element itself. I'm
     // getting confused!
-    //
-    // How does the lifecycle work? Well, when the execution gets here, we have already created the 'a' element and
-    // referenced it via the 'window.untetheredElement' variable. So, we have to attach the 'a' element and nullify the
-    // window.untetheredElement reference. Now, the 'a' element does not need processing anymore and will be carried to
-    // the DOM via it's parent 'li' element. It's hitching a free ride! Additionally we have another challenge: managing
-    // how to attach a *collection* of untethered elements. After all, 'li' elements are list items and so we have to
-    // attach many of them to a common shared parent element. The singular 'window.untetheredElement' mechanism won't
-    // accommodate this. So, let's introduce a 'window.untetheredElements' array variable.
     if (tagName === 'li') {
         useReact = false
         isAParentNode = otherArgs.length > 0 // I think this needs to be extended to also detect that the the otherArgs are 'undefined' which would indicate that the otherArgs were originally `myCreateElement` invocations (which returns undefined). AND I think we need to keep track of "how *many* children" are there and later tether that many from the "untethered stack"
@@ -96,21 +87,14 @@ function myCreateElement(tagName, options, ...otherArgs) {
         useReact = true
         console.log("Creating an element ('div') *without* React.")
         el = document.createElement('div')
-        if (window.untetheredElements.length > 0) {
-            el.append(...window.untetheredElements)
-        }
-        window.untetheredElements = [el]
     }
 
     // The common code for the attaching of elements created *without* React.
     //
     // This code needs to be updated and fully made to use the new "return value based parent/child association" mechanism
     if (!useReact) {
-        let numberOfUntetheredElements = window.untetheredElements.length;
-        let untetheredElementsExist = numberOfUntetheredElements > 0;
-
-        if (isAParentNode && untetheredElementsExist) {
-            console.log(`Detected that this is a parent node (${tagName}) and that there exist untethered elements (${numberOfUntetheredElements}). Tethering the child elements now.`)
+        if (isAParentNode) { // can probably factor out "isAParentNode"
+            console.log(`Detected that this is a parent node (${tagName}). Tethering the child elements now.`)
             // We want to tether any children elements (specified by the "otherArgs" argument) to this element but we
             // are unable to tether React elements because React elements aren't real elements yet. I don't think this
             // toy app has this problem as of right now, but I will write some explicit warning logging to help me in
@@ -120,19 +104,10 @@ function myCreateElement(tagName, options, ...otherArgs) {
                 if (React.isValidElement(child)) {
                     console.warn(`Detected a React element while executing the tethering process. React elements can't be attached to DOM as is. Skipping it. (TODO enhance the tethering process to accommodate React elements).`)
                 } else {
-                    // First, remove the child from "untethered" list so that it won't be doubly applied later.
-                    // Next, append the child
-                    let idx = window.untetheredElements.indexOf(child)
-                    window.untetheredElements.splice(idx, 1)
                     el.appendChild(child)
                 }
             }
-        } else if (isAParentNode && !untetheredElementsExist) {
-            console.log(`Detected that this is a parent node (${tagName}) but did not find any untethered elements to tether to it. This can happen, for example, if the children elements are based on a piece of state that happens to be empty.`)
-        } else if (!isAParentNode && untetheredElementsExist) {
-            console.log(`Detected that this node  (${tagName}) is probably in a sibling hierarchy because there exist untethered elements but this is not a parent node.`) // this "if" conditional check isn't quite robust I think
         }
-        window.untetheredElements.push(el)
         return el
     }
 
@@ -144,19 +119,10 @@ function myCreateElement(tagName, options, ...otherArgs) {
     console.log(`Creating an element ('${tagNameToString}') using React. Assigning 'data-index' attribute: '${index}'`)
     options['data-index'] = index
 
-    let untetheredElements = window.untetheredElements
-    window.untetheredElements = []
-    if (untetheredElements.length > 0) {
-        console.log(`Recording the untethered elements (${untetheredElements.length}) to later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
-        window.untetheredElements2 = {
-            elements: untetheredElements,
-            parentElementIndex: index
-        }
-    }
-
-    // Intercept any incoming otherArgs that are illegal arguments to `React.createElement`. What should we do with
-    // them? I don't know exactly. We'll log them for now.
+    // Intercept any incoming "otherArgs" that are illegal arguments to `React.createElement`. Record them as untethered
+    // elements so that they will be later tethered to the DOM.
     let legalArgs = []
+    let untetheredElements = []
 
     function isLegalNonArrayElement(arg) {
         return typeof arg === "string" || React.isValidElement(arg)
@@ -166,20 +132,36 @@ function myCreateElement(tagName, options, ...otherArgs) {
         let arg = otherArgs[i]
         if (arg.constructor === Array) {
             let nestedLegalArgs = []
+            let nestedUntetheredElements = []
             arg.forEach(nestedArg => {
                 if (isLegalNonArrayElement(nestedArg)) {
                     nestedLegalArgs.push(nestedArg)
                 } else {
-                    console.warn(`Detected illegal argument (${nestedArg.tagName}) within an Array in the request to 'React.createElement. Filtering it out.`)
+                    console.warn(`Detected illegal argument (${nestedArg.tagName}) within an Array in the request to 'React.createElement. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
+                    nestedUntetheredElements.push(nestedArg)
                 }
             })
-            legalArgs.push(nestedLegalArgs)
+            if (nestedLegalArgs.length > 0) {
+                legalArgs.push(nestedLegalArgs)
+            }
+            if (nestedUntetheredElements.length > 0) {
+                untetheredElements.push(nestedUntetheredElements)
+            }
         } else if (isLegalNonArrayElement(arg)) {
             legalArgs.push(arg)
         } else {
-            console.warn(`Detected illegal argument (${arg.tagName}) in the request to 'React.createElement'. Filtering it out.`)
+            console.warn(`Detected illegal argument (${arg.tagName}) in the request to 'React.createElement'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
+            untetheredElements.push(arg)
         }
     }
+
+    if (untetheredElements.length > 0) {
+        window.untetheredElements = {
+            elements: untetheredElements,
+            parentElementIndex: index
+        }
+    }
+
     return originalReactCreateElement(tagName, options, ...legalArgs)
 }
 
@@ -187,13 +169,13 @@ function myCreateElement(tagName, options, ...otherArgs) {
  * Tether the untethered elements
  */
 function tetherElements() {
-    if (window.untetheredElements2 === null) {
+    if (window.untetheredElements === null) {
         console.log("There are no elements to tether")
         return
     }
 
-    let {elements, parentElementIndex} = window.untetheredElements2
-    window.untetheredElements2 = null
+    let {elements, parentElementIndex} = window.untetheredElements
+    window.untetheredElements = null
     console.log(`Tethering untethered elements (${elements.length})`)
     let parentEl = document.querySelector(`[data-index="${parentElementIndex}"]`)
     if (parentEl == null) {
@@ -201,6 +183,9 @@ function tetherElements() {
         return;
     }
     parentEl.innerHTML = ''; // the inner HTML often already contains content (and I don't totally know why, look at the logs) so clear it.
+
+    // If any of the untethered elements are actually an array of untethered elements, then they need to be flattened
+    elements = elements.flat()
 
     while (elements.length > 0) {
         let el = elements.pop()
