@@ -64,7 +64,8 @@ function myCreateElement(tagName, options, ...otherArgs) {
         el = document.createElement('li');
     }
 
-    if (tagName === 'ul') {
+    // UNIMPLEMENTED. I got ahead of myself again. I have to roll this back.
+    if (false && tagName === 'ul') {
         useReact = false
         isAParentNode = otherArgs.length > 0 // although... by definition this is a "parent node" right? Of course when there happen to be no children than it is not a parent, but by design a "unordered list" element is supposed to contain children
         console.log("Creating an element ('ul') *without* React.")
@@ -104,7 +105,11 @@ function myCreateElement(tagName, options, ...otherArgs) {
                 if (React.isValidElement(child)) {
                     console.warn(`Detected a React element while executing the tethering process. React elements can't be attached to DOM as is. Skipping it. (TODO enhance the tethering process to accommodate React elements).`)
                 } else {
-                    el.appendChild(child)
+                    if (child instanceof Node) {
+                        el.appendChild(child)
+                    } else {
+                        el.innerText += child
+                    }
                 }
             }
         }
@@ -156,6 +161,9 @@ function myCreateElement(tagName, options, ...otherArgs) {
     }
 
     if (untetheredElements.length > 0) {
+        if (window.untetheredElements !== null) {
+            console.error("'window.untetheredElements' is non-null. It will be clobbered by a new assignment")
+        }
         window.untetheredElements = {
             elements: untetheredElements,
             parentElementIndex: index

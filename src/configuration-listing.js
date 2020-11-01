@@ -18,6 +18,6 @@ class ConfigurationListing extends React.Component {
 
         return React.createElement('div', null,
             React.createElement('h3', null, "Configuration"),
-            configurationElements)
+            React.createElement('ul', null, configurationElements))
     }
 }

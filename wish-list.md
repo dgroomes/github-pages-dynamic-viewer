@@ -17,12 +17,12 @@ General clean ups, TODOs and things I wish to implement for this project:
 * Support Safari
 * Support Edge
 * DONE Fix the styling on the sidebar
-* Exercise the `myCreateElement` to make `<li>` elements *without* child elements. Will it work out-of-the-box? I don't
+* IN PROGRESS Exercise the `myCreateElement` to make `<li>` elements *without* child elements. Will it work out-of-the-box? I don't
   think it will. But this functionality needs to work because its design will be used as the basis for handling `<div>`
   elements and beyond in `myCreateElement`. I will use the new "ConfigurationListing" component to create `<li>` 
   elements without their own child elements. The `<li>` elements will just be text.
 * Re-write the "parent element identification" and tethering logic to be robust. 
-* DONE De-react `<ul>` element creation
+* De-react `<ul>` element creation
 * OBSOLETED Solve the "how many expected children are there?" problem
   * We've gotten pretty far by returning void in the `myCreateElement` function, but I think model fundamentally doesn't
     work. It would solve our problems if we could make this function actually return the elements that were created.
