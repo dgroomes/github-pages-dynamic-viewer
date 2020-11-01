@@ -4,9 +4,8 @@
 // isn't much of an application as it is a simple web page that uses a bit of React features).
 
 window.indexCounter = 0
-window.untetheredElement = null // can we factor this out and instead code to untetheredElements?
 window.untetheredElements = []
-window.untetheredElements2 = null
+window.untetheredElements2 = null // these elements are designated to be tethered after the React lifecycle is done. Still, this untethered stuff needs to be consolidated more
 
 /**
  * Create an HTML element. This is a facade to React.createElement in some cases and in other cases will use vanilla JS
@@ -38,7 +37,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
         let el = document.createElement('a')
         el.href = href;
         el.innerHTML = content;
-        window.untetheredElement = el;
+        window.untetheredElements.push(el)
         return;
     }
 
@@ -58,8 +57,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     if (tagName === 'li') {
         console.log("Creating an element ('li') *without* React.")
         let el = document.createElement('li');
-        let child = window.untetheredElement;
-        window.untetheredElement = null;
+        let child = window.untetheredElements.pop();
         el.appendChild(child);
         window.untetheredElements.push(el)
         return;
@@ -90,14 +88,6 @@ function myCreateElement(tagName, options, ...otherArgs) {
     console.log(`Creating an element ('${tagName}') using React. Assigning 'data-index' attribute: '${index}'`)
     options['data-index'] = index
 
-    // Meld a singular untethered element into the array of untethered elements. I'm not sure this is necessary or will
-    // ever be useful for my toy app because of the limited range of elements on the page but for a larger app it might
-    // be...
-    let untetheredElement = window.untetheredElement;
-    if (untetheredElement != null) {
-        window.untetheredElements.push(untetheredElement)
-        window.untetheredElement = null
-    }
     let untetheredElements = window.untetheredElements
     window.untetheredElements = []
     if (untetheredElements.length > 0) {
