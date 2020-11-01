@@ -23,4 +23,13 @@ General clean ups, TODOs and things I wish to implement for this project:
   elements without their own child elements. The `<li>` elements will just be text.
 * Re-write the "parent element identification" and tethering logic to be robust. 
 * De-react `<ul>` element creation
-* Solve the "how many expected children are there?" problem
+* OBSOLETED Solve the "how many expected children are there?" problem
+  * We've gotten pretty far by returning void in the `myCreateElement` function, but I think model fundamentally doesn't
+    work. It would solve our problems if we could make this function actually return the elements that were created.
+    We wouldn't need this "untethered elements" reference. But, React complains when we return anything except a React
+    element from here... Can we re-define the React.createElement function? Is that possible?
+  * UPDATE: This problem will *not* be solved. Instead we succesfully prototyped a solution to re-define `React.createElement`
+    with a facade function which will let us easily associate parent elements to children elements using the return
+    value from `myCreateElement` function. This is convenient and will make for much easier to understand code. Next steps
+    are to re-implement the existing framework to do "parent/child association via return value"
+* Re-implement the "parent/child association" code to use the return value from `myCreateElement`

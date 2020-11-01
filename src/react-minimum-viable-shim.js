@@ -7,6 +7,13 @@ window.indexCounter = 0
 window.untetheredElements = []
 window.untetheredElements2 = null // these elements are designated to be tethered after the React lifecycle is done. Still, this untethered stuff needs to be consolidated more
 
+// Re-define React.createElement
+// Facade the original implementation with our own myCreateElement function
+let originalReactCreateElement = React.createElement
+console.log(`The original React.createElement function:\n ${originalReactCreateElement}`)
+console.log(`Re-assigning the React.createElement to a custom facade`)
+React.createElement = myCreateElement
+
 /**
  * Create an HTML element. This is a facade to React.createElement in some cases and in other cases will use vanilla JS
  * to create the element using the DOM APIs and my own frameworky JS code. Eventually all React code will be
@@ -39,6 +46,8 @@ window.untetheredElements2 = null // these elements are designated to be tethere
  * element. But this is only an approximation because there could be more children because an otherArgs argument could
  * represent a plural request for elements (like `this.state.myArray.map(x => myCreateElement(...)`). How do we keep track
  * of the exact number of expected children?
+ *
+ * @return either the React-created element or the vanilla JS-created element
  */
 function myCreateElement(tagName, options, ...otherArgs) {
     let useReact = true
@@ -133,7 +142,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
             console.log(`Detected that this node  (${tagName}) is probably in a sibling hierarchy because there exist untethered elements but this is not a parent node.`) // this "if" conditional check isn't quite robust I think
         }
         window.untetheredElements.push(el)
-        return
+        return el
     }
 
     if (options == null) {
@@ -153,7 +162,34 @@ function myCreateElement(tagName, options, ...otherArgs) {
             parentElementIndex: index
         }
     }
-    return React.createElement(tagName, options, ...otherArgs)
+
+    // Intercept any incoming otherArgs that are illegal arguments to `React.createElement`. What should we do with
+    // them? I don't know exactly. We'll log them for now.
+    let legalArgs = []
+
+    function isLegalNonArrayElement(arg) {
+        return typeof arg === "string" || React.isValidElement(arg)
+    }
+
+    for (let i = 0; i < otherArgs.length; i++) {
+        let arg = otherArgs[i]
+        if (arg.constructor === Array) {
+            let nestedLegalArgs = []
+            arg.forEach(nestedArg => {
+                if (isLegalNonArrayElement(nestedArg)) {
+                    nestedLegalArgs.push(nestedArg)
+                } else {
+                    console.warn(`Detected illegal argument (${nestedArg.tagName}) within an Array in the request to 'React.createElement. Filtering it out.`)
+                }
+            })
+            legalArgs.push(nestedLegalArgs)
+        } else if (isLegalNonArrayElement(arg)) {
+            legalArgs.push(arg)
+        } else {
+            console.warn(`Detected illegal argument (${arg.tagName}) in the request to 'React.createElement'. Filtering it out.`)
+        }
+    }
+    return originalReactCreateElement(tagName, options, ...legalArgs)
 }
 
 /**
