@@ -21,6 +21,10 @@ General clean ups, TODOs and things I wish to implement for this project:
   think it will. But this functionality needs to work because its design will be used as the basis for handling `<div>`
   elements and beyond in `myCreateElement`. I will use the new "ConfigurationListing" component to create `<li>` 
   elements without their own child elements. The `<li>` elements will just be text.
+    * DONE Part of this effort will require a small remodeling of the "untethered elements" reference. There can exist
+      multiple groups of untethered elements (meaning, groups of elements where each group should have a different parent)
+      at the same time. So, we must keep track of all of these groups at the same time. The "window.untetheredElements"
+      must be an array and not a singular object.
 * Re-write the "parent element identification" and tethering logic to be robust. 
 * De-react `<ul>` element creation
 * OBSOLETED Solve the "how many expected children are there?" problem

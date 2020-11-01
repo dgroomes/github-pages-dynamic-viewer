@@ -4,7 +4,12 @@
 // isn't much of an application as it is a simple web page that uses a bit of React features).
 
 window.indexCounter = 0
-window.untetheredElements = null // Elements tracked in this variable will be tethered to the DOM after the React lifecycle is done. This is a briding mechanism between React and vanilla JS.
+/*
+ * Groups of elements tracked in this variable will be tethered to the DOM after the React lifecycle is done. This is a
+ * bridging mechanism between React and the frameworky vanilla JS written in this shim.
+ */
+window.untetheredElements = []
+
 
 // Re-define React.createElement
 // Facade the original implementation with our own myCreateElement function
@@ -161,43 +166,45 @@ function myCreateElement(tagName, options, ...otherArgs) {
     }
 
     if (untetheredElements.length > 0) {
-        if (window.untetheredElements !== null) {
-            console.error("'window.untetheredElements' is non-null. It will be clobbered by a new assignment")
-        }
-        window.untetheredElements = {
+        window.untetheredElements.push({
             elements: untetheredElements,
             parentElementIndex: index
-        }
+        })
     }
 
     return originalReactCreateElement(tagName, options, ...legalArgs)
 }
 
 /**
- * Tether the untethered elements
+ * Tether the groups of untethered elements
  */
 function tetherElements() {
-    if (window.untetheredElements === null) {
+    if (window.untetheredElements.length === 0) {
         console.log("There are no elements to tether")
         return
     }
 
-    let {elements, parentElementIndex} = window.untetheredElements
-    window.untetheredElements = null
-    console.log(`Tethering untethered elements (${elements.length})`)
-    let parentEl = document.querySelector(`[data-index="${parentElementIndex}"]`)
-    if (parentEl == null) {
-        console.error(`Something went wrong. Did not find an element for id ${elementId}. So, the untethered elements will remain untethered (sad).`)
-        return;
-    }
-    parentEl.innerHTML = ''; // the inner HTML often already contains content (and I don't totally know why, look at the logs) so clear it.
+    for (let i = 0; i < window.untetheredElements.length; i++) {
+        let {elements, parentElementIndex} = window.untetheredElements[i]
+        console.log(`Tethering untethered elements (${elements.length})`)
+        let parentEl = document.querySelector(`[data-index="${parentElementIndex}"]`)
+        if (parentEl == null) {
+            console.error(`Something went wrong. Did not find an element for id ${elementId}. So, the untethered elements will remain untethered (sad).`)
+            return;
+        }
+        parentEl.innerHTML = ''; // the inner HTML often already contains content (and I don't totally know why, look at the logs) so clear it.
 
-    // If any of the untethered elements are actually an array of untethered elements, then they need to be flattened
-    elements = elements.flat()
+        // If any of the untethered elements are actually an array of untethered elements, then they need to be flattened
+        elements = elements.flat()
 
-    while (elements.length > 0) {
-        let el = elements.pop()
-        console.log(`Tethering untethered element '${el.tagName}' to '${parentEl.tagName}`)
-        parentEl.appendChild(el);
+        while (elements.length > 0) {
+            let el = elements.pop()
+            console.log(`Tethering untethered element '${el.tagName}' to '${parentEl.tagName}`)
+            parentEl.appendChild(el);
+        }
     }
+
+    // All groups of elements should have been successfully tethered to the DOM at this point. So, zero out the
+    // "untethered elements" reference
+    window.untetheredElements = []
 }
