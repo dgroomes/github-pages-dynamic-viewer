@@ -16,3 +16,4 @@ General clean ups, TODOs and things I wish to implement for this project:
 * Support Chrome
 * Support Safari
 * Support Edge
+* (regression) Fix the styling on the sidebar
