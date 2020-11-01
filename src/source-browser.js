@@ -123,12 +123,9 @@ class SourceBrowser extends React.Component {
     componentDidUpdate() {
         /**
          * I don't think 'componentDidUpdate' is quite the perfect way to execute our vanilla JS manipulate-the-dom-by-hand
-         * code but it is effective. So, execute each of the callbacks.
+         * code but it is effective. So, invoke our frameworky code to tether the untethered elements.
          */
-        while (window.postReactElementCreationCallbacks.length !== 0) {
-            let callback = window.postReactElementCreationCallbacks.pop()
-            callback();
-        }
+        tetherElements()
     }
 
     render() {

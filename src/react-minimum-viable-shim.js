@@ -6,7 +6,7 @@
 window.elementIdCounter = 1
 window.untetheredElement = null // can we factor this out and instead code to untetheredElements?
 window.untetheredElements = []
-window.postReactElementCreationCallbacks = []
+window.untetheredElementsCallbacks = []
 
 /**
  * Create an HTML element. This is a facade to React.createElement in some cases and in other cases will use vanilla JS
@@ -73,7 +73,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     //
     // NOT YET IMPLEMENTED. Skipping this with a 'false' check because this doesn't work yet. I need to restructure the
     // 'delayed work' model so it is more consolidated and easy to understand. Specifically, I need to join the 'untethered'
-    // stuff with the 'postReactElementCreationCallbacks' stuff and model it more simply.
+    // stuff with the 'untetheredElementsCallbacks' stuff and model it more simply.
     if (false && tagName === 'div' && options !== null && options["opt-in"]) {
         console.log("Creating an element ('div') *without* React.")
         let el = document.createElement('div')
@@ -103,7 +103,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     window.untetheredElements = []
     if (untetheredElements.length > 0) {
         console.log(`Registering a callback to push the untethered elements (${untetheredElements.length}) to this element *after* React is done doing it's thing.`)
-        window.postReactElementCreationCallbacks.push(() => {
+        window.untetheredElementsCallbacks.push(() => {
             console.log(`Attaching untethered elements (${untetheredElements.length})`)
             let reactCreatedElement = document.getElementById(elementId)
             if (reactCreatedElement == null) {
@@ -120,4 +120,14 @@ function myCreateElement(tagName, options, ...otherArgs) {
         })
     }
     return React.createElement(tagName, options, ...otherArgs)
+}
+
+/**
+ * Tether the untethered elements
+ */
+function tetherElements() {
+    while (window.untetheredElementsCallbacks.length !== 0) {
+        let callback = window.untetheredElementsCallbacks.pop()
+        callback();
+    }
 }
