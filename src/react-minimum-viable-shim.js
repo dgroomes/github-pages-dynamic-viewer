@@ -3,14 +3,14 @@
 // This is the minimum viable shim code I need to remove the React library from this application (or rather, this
 // isn't much of an application as it is a simple web page that uses a bit of React features).
 
-window.elementIdCounter = 1
+window.elementIdCounter = 0
 window.untetheredElement = null // can we factor this out and instead code to untetheredElements?
 window.untetheredElements = []
-window.untetheredElementsCallbacks = []
+window.untetheredElements2 = null
 
 /**
  * Create an HTML element. This is a facade to React.createElement in some cases and in other cases will use vanilla JS
- * to create the element using the DOM APIs, callbacks and my own frameworky JS code. Eventually all React code will be
+ * to create the element using the DOM APIs and my own frameworky JS code. Eventually all React code will be
  * removed and it will be pure vanilla JS.
  *
  * Referenced material:
@@ -72,8 +72,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // We will look for the field 'opt-in' in the 'options' argument.
     //
     // NOT YET IMPLEMENTED. Skipping this with a 'false' check because this doesn't work yet. I need to restructure the
-    // 'delayed work' model so it is more consolidated and easy to understand. Specifically, I need to join the 'untethered'
-    // stuff with the 'untetheredElementsCallbacks' stuff and model it more simply.
+    // 'untethered' model so it is more consolidated and easy to understand.
     if (false && tagName === 'div' && options !== null && options["opt-in"]) {
         console.log("Creating an element ('div') *without* React.")
         let el = document.createElement('div')
@@ -87,7 +86,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     if (options == null) {
         options = {}
     }
-    let elementId = `globally-unique-id-${window.elementIdCounter++}`;
+    let elementId = `globally-unique-id-${++window.elementIdCounter}`;
     console.log(`Creating an element ('${tagName}') using React. Assigning id: '${elementId}'`)
     options['id'] = elementId;
 
@@ -102,22 +101,11 @@ function myCreateElement(tagName, options, ...otherArgs) {
     let untetheredElements = window.untetheredElements
     window.untetheredElements = []
     if (untetheredElements.length > 0) {
-        console.log(`Registering a callback to push the untethered elements (${untetheredElements.length}) to this element *after* React is done doing it's thing.`)
-        window.untetheredElementsCallbacks.push(() => {
-            console.log(`Attaching untethered elements (${untetheredElements.length})`)
-            let reactCreatedElement = document.getElementById(elementId)
-            if (reactCreatedElement == null) {
-                console.error(`Something went wrong. Did not find an element for id ${elementId}. So, the untethered element will remain untethered (sad).`)
-                return;
-            }
-
-            reactCreatedElement.innerHTML = ''; // the inner HTML often already contains content (and I don't totally know why, look at the logs) so clear it.
-            while (untetheredElements.length > 0) {
-                let untetheredElement = untetheredElements.pop();
-                console.log(`Attaching untethered element '${untetheredElement.tagName}'`)
-                reactCreatedElement.appendChild(untetheredElement);
-            }
-        })
+        console.log(`Recording the untethered elements (${untetheredElements.length}) to later be tethered after React is done doing it's thing.`)
+        window.untetheredElements2 = {
+            elements: untetheredElements,
+            parentElementId: elementId
+        }
     }
     return React.createElement(tagName, options, ...otherArgs)
 }
@@ -126,8 +114,24 @@ function myCreateElement(tagName, options, ...otherArgs) {
  * Tether the untethered elements
  */
 function tetherElements() {
-    while (window.untetheredElementsCallbacks.length !== 0) {
-        let callback = window.untetheredElementsCallbacks.pop()
-        callback();
+    if (window.untetheredElements2 === null) {
+        console.log("There are no elements to tether")
+        return
+    }
+
+    let {elements, parentElementId} = window.untetheredElements2
+    window.untetheredElements2 = null
+    console.log(`Tethering untethered elements (${elements.length})`)
+    let parentEl = document.getElementById(parentElementId)
+    if (parentEl == null) {
+        console.error(`Something went wrong. Did not find an element for id ${elementId}. So, the untethered elements will remain untethered (sad).`)
+        return;
+    }
+    parentEl.innerHTML = ''; // the inner HTML often already contains content (and I don't totally know why, look at the logs) so clear it.
+
+    while (elements.length > 0) {
+        let el = elements.pop()
+        console.log(`Tethering untethered element '${el.tagName}' to '${parentEl.tagName}`)
+        parentEl.appendChild(el);
     }
 }
