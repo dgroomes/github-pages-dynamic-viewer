@@ -33,15 +33,22 @@ window.untetheredElements2 = null // these elements are designated to be tethere
  * Currently, this code makes the assumption that when an element is created by React, then all existing untethered
  * elements should be the children of that new React element. But this is not true. React's `createElement` method takes
  * a varargs list of React elements. So, this code actually makes the mistake of (incorrectly) identifying what should
- * be *sibling* elements as the parent element.
+ * be *sibling* elements as the parent element. NEW UPDATE: also we can make a naive attempt at guessing the number of
+ * child elements that there should be for a newly requested element by inspecting the length of the "otherArgs" arg.
+ * For example, if it is of length 2 then there are at least two children that should be tethered to the newly requested
+ * element. But this is only an approximation because there could be more children because an otherArgs argument could
+ * represent a plural request for elements (like `this.state.myArray.map(x => myCreateElement(...)`). How do we keep track
+ * of the exact number of expected children?
  */
 function myCreateElement(tagName, options, ...otherArgs) {
     let useReact = true
     let isAParentNode
+    let expectedNumberOfChildren
     let el
     if (tagName === 'a') {
         useReact = false
         isAParentNode = false
+        expectedNumberOfChildren = 0
         let content = otherArgs[0];
         let href = options.href;
         console.log(`Creating an element ('a') *without* React. content='${content} href=${href}'`)
@@ -66,8 +73,18 @@ function myCreateElement(tagName, options, ...otherArgs) {
     if (tagName === 'li') {
         useReact = false
         isAParentNode = otherArgs.length > 0 // I think this needs to be extended to also detect that the the otherArgs are 'undefined' which would indicate that the otherArgs were originally `myCreateElement` invocations (which returns undefined). AND I think we need to keep track of "how *many* children" are there and later tether that many from the "untethered stack"
+        expectedNumberOfChildren = otherArgs.length
         console.log("Creating an element ('li') *without* React.")
         el = document.createElement('li');
+    }
+
+    // WORK IN PROGRESS. We need to solve the "how many expected children are there?" problem.
+    if (false && tagName === 'ul') {
+        useReact = false
+        isAParentNode = otherArgs.length > 0 // although... by definition this is a "parent node" right? Of course when there happen to be no children than it is not a parent, but by design a "unordered list" element is supposed to contain children
+        expectedNumberOfChildren = otherArgs.length
+        console.log("Creating an element ('ul') *without* React.")
+        el = document.createElement('ul')
     }
 
     // Now, onto the really hard one, the 'div' tag! The div tag is so generic: it can be inside of other elements and
@@ -96,11 +113,20 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // In theory, I think this tethering logic could be pushed into the `tetherElements` function but maybe the
     // delineation is useful. Not sure yet.
     if (!useReact) {
-        let untetheredElementsExist = window.untetheredElements.length > 0;
+        let numberOfUntetheredElements = window.untetheredElements.length;
+        let untetheredElementsExist = numberOfUntetheredElements > 0;
+
+        tetherBlock:
         if (isAParentNode && untetheredElementsExist) {
-            console.log(`Detected that this is a parent node (${tagName}) and that there exist untethered elements ${window.untetheredElements.length}. Tethering the elements now.`) // I think this needs to support tethering more than just a singular untethered element, if more than exist.
-            let child = window.untetheredElements.pop();
-            el.appendChild(child);
+            console.log(`Detected that this is a parent node (${tagName}, with ${expectedNumberOfChildren} expected children) and that there exist untethered elements (${numberOfUntetheredElements}). Tethering the child elements now.`)
+            if (expectedNumberOfChildren > numberOfUntetheredElements) {
+                console.error(`The number of expected children (${expectedNumberOfChildren}) is greater than the number of untethered elements (${numberOfUntetheredElements}). Aborting the tethering process.`)
+                break tetherBlock
+            }
+            let children = window.untetheredElements.splice(-expectedNumberOfChildren);
+            children.forEach(child => {
+                el.appendChild(child)
+            })
         } else if (isAParentNode && !untetheredElementsExist) {
             console.log(`Detected that this is a parent node (${tagName}) but did not find any untethered elements to tether to it. This can happen, for example, if the children elements are based on a piece of state that happens to be empty.`)
         } else if (!isAParentNode && untetheredElementsExist) {
