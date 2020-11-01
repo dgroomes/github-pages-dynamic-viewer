@@ -3,7 +3,7 @@
 // This is the minimum viable shim code I need to remove the React library from this application (or rather, this
 // isn't much of an application as it is a simple web page that uses a bit of React features).
 
-window.elementIdCounter = 0
+window.indexCounter = 0
 window.untetheredElement = null // can we factor this out and instead code to untetheredElements?
 window.untetheredElements = []
 window.untetheredElements2 = null
@@ -86,9 +86,9 @@ function myCreateElement(tagName, options, ...otherArgs) {
     if (options == null) {
         options = {}
     }
-    let elementId = `globally-unique-id-${++window.elementIdCounter}`;
-    console.log(`Creating an element ('${tagName}') using React. Assigning id: '${elementId}'`)
-    options['id'] = elementId;
+    let index = `${++window.indexCounter}`
+    console.log(`Creating an element ('${tagName}') using React. Assigning 'data-index' attribute: '${index}'`)
+    options['data-index'] = index
 
     // Meld a singular untethered element into the array of untethered elements. I'm not sure this is necessary or will
     // ever be useful for my toy app because of the limited range of elements on the page but for a larger app it might
@@ -104,7 +104,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
         console.log(`Recording the untethered elements (${untetheredElements.length}) to later be tethered after React is done doing it's thing.`)
         window.untetheredElements2 = {
             elements: untetheredElements,
-            parentElementId: elementId
+            parentElementIndex: index
         }
     }
     return React.createElement(tagName, options, ...otherArgs)
@@ -119,10 +119,10 @@ function tetherElements() {
         return
     }
 
-    let {elements, parentElementId} = window.untetheredElements2
+    let {elements, parentElementIndex} = window.untetheredElements2
     window.untetheredElements2 = null
     console.log(`Tethering untethered elements (${elements.length})`)
-    let parentEl = document.getElementById(parentElementId)
+    let parentEl = document.querySelector(`[data-index="${parentElementIndex}"]`)
     if (parentEl == null) {
         console.error(`Something went wrong. Did not find an element for id ${elementId}. So, the untethered elements will remain untethered (sad).`)
         return;
