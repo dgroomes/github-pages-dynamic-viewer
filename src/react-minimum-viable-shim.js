@@ -37,9 +37,11 @@ window.untetheredElements2 = null // these elements are designated to be tethere
  */
 function myCreateElement(tagName, options, ...otherArgs) {
     let useReact = true
+    let isAParentNode
     let el
     if (tagName === 'a') {
         useReact = false
+        isAParentNode = false
         let content = otherArgs[0];
         let href = options.href;
         console.log(`Creating an element ('a') *without* React. content='${content} href=${href}'`)
@@ -63,6 +65,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // accommodate this. So, let's introduce a 'window.untetheredElements' array variable.
     if (tagName === 'li') {
         useReact = false
+        isAParentNode = otherArgs.length > 0 // I think this needs to be extended to also detect that the the otherArgs are 'undefined' which would indicate that the otherArgs were originally `myCreateElement` invocations (which returns undefined). AND I think we need to keep track of "how *many* children" are there and later tether that many from the "untethered stack"
         console.log("Creating an element ('li') *without* React.")
         el = document.createElement('li');
     }
@@ -88,16 +91,20 @@ function myCreateElement(tagName, options, ...otherArgs) {
         window.untetheredElements = [el]
     }
 
-    // The common code for the creation of elements *without* React. This boils down to the logic needed for tracking
-    // untethered elements (e.g. parent element identification, varargs counting, etc.)
+    // The common code for the attaching of elements created *without* React.
     //
-    // This uses a naive implementation to tether any existing untethered elements: it just checks if there exist any
-    // and appends them to the newly created element. This is wrong. The tethering logic should be pushed into the
-    // `tetherElements` function which should be implemented with more sophistication.
+    // In theory, I think this tethering logic could be pushed into the `tetherElements` function but maybe the
+    // delineation is useful. Not sure yet.
     if (!useReact) {
-        if (window.untetheredElements.length > 0) {
+        let untetheredElementsExist = window.untetheredElements.length > 0;
+        if (isAParentNode && untetheredElementsExist) {
+            console.log(`Detected that this is a parent node (${tagName}) and that there exist untethered elements ${window.untetheredElements.length}. Tethering the elements now.`) // I think this needs to support tethering more than just a singular untethered element, if more than exist.
             let child = window.untetheredElements.pop();
             el.appendChild(child);
+        } else if (isAParentNode && !untetheredElementsExist) {
+            console.log(`Detected that this is a parent node (${tagName}) but did not find any untethered elements to tether to it. This can happen, for example, if the children elements are based on a piece of state that happens to be empty.`)
+        } else if (!isAParentNode && untetheredElementsExist) {
+            console.log(`Detected that this node  (${tagName}) is probably in a sibling hierarchy because there exist untethered elements but this is not a parent node.`) // this "if" conditional check isn't quite robust I think
         }
         window.untetheredElements.push(el)
         return
@@ -114,7 +121,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     let untetheredElements = window.untetheredElements
     window.untetheredElements = []
     if (untetheredElements.length > 0) {
-        console.log(`Recording the untethered elements (${untetheredElements.length}) to later be tethered after React is done doing it's thing.`)
+        console.log(`Recording the untethered elements (${untetheredElements.length}) to later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
         window.untetheredElements2 = {
             elements: untetheredElements,
             parentElementIndex: index
