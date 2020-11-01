@@ -27,7 +27,13 @@ window.untetheredElements2 = null // these elements are designated to be tethere
  * there must be some global way I could hook into React to wire in my own frameworky code, but I don't have enough time
  * to research that right now.
  *
- * Cases supported: anchor tags (`<a>`), list item tags (`<li`)
+ * Cases supported: anchor tags (`<a>`), list item tags (`<li>`)
+ *
+ * UPDATE: there is a fundamental design change that needs to be made with regard to the "parent element identification".
+ * Currently, this code makes the assumption that when an element is created by React, then all existing untethered
+ * elements should be the children of that new React element. But this is not true. React's `createElement` method takes
+ * a varargs list of React elements. So, this code actually makes the mistake of (incorrectly) identifying what should
+ * be *sibling* elements as the parent element.
  */
 function myCreateElement(tagName, options, ...otherArgs) {
     if (tagName === 'a') {
@@ -71,6 +77,9 @@ function myCreateElement(tagName, options, ...otherArgs) {
     //
     // NOT YET IMPLEMENTED. Skipping this with a 'false' check because this doesn't work yet. I need to restructure the
     // 'untethered' model so it is more consolidated and easy to understand.
+    //
+    // UPDATE: double woops, we should implement 'ul' defore 'div' because it is the closest ancestor to 'li'. I jumped
+    // ahead on accident and didn't even realize it.
     if (false && tagName === 'div' && options !== null && options["opt-in"]) {
         console.log("Creating an element ('div') *without* React.")
         let el = document.createElement('div')
