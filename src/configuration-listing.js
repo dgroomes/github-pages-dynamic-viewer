@@ -13,7 +13,7 @@ class ConfigurationListing extends React.Component {
     render() {
         let configurationElements = Object.entries(window.config).map(([key, value], _idx) => {
             let content = `${key}: ${value}`
-            return myCreateElement('p', null, content)
+            return myCreateElement('p', { "key": key }, content)
         })
 
         return myCreateElement('div', null,

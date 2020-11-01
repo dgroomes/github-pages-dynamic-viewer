@@ -94,7 +94,8 @@ function myCreateElement(tagName, options, ...otherArgs) {
         options = {}
     }
     let index = `${++window.indexCounter}`
-    console.log(`Creating an element ('${tagName}') using React. Assigning 'data-index' attribute: '${index}'`)
+    let tagNameToString = typeof tagName === 'function' ? `(function) ${tagName.name}` : tagName
+    console.log(`Creating an element ('${tagNameToString}') using React. Assigning 'data-index' attribute: '${index}'`)
     options['data-index'] = index
 
     let untetheredElements = window.untetheredElements
