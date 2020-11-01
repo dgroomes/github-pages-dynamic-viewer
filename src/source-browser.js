@@ -120,6 +120,17 @@ class SourceBrowser extends React.Component {
             });
     }
 
+    componentDidUpdate() {
+        /**
+         * I don't think 'componentDidUpdate' is quite the perfect way to execute our vanilla JS manipulate-the-dom-by-hand
+         * code but it is effective. So, execute each of the callbacks.
+         */
+        while (window.postReactElementCreationCallbacks.length !== 0) {
+            let callback = window.postReactElementCreationCallbacks.pop()
+            callback();
+        }
+    }
+
     render() {
         return myCreateElement('div', null,
             myCreateElement('div', {"id": "sidebar"},
