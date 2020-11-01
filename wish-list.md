@@ -32,4 +32,4 @@ General clean ups, TODOs and things I wish to implement for this project:
     with a facade function which will let us easily associate parent elements to children elements using the return
     value from `myCreateElement` function. This is convenient and will make for much easier to understand code. Next steps
     are to re-implement the existing framework to do "parent/child association via return value"
-* Re-implement the "parent/child association" code to use the return value from `myCreateElement`
+* IN PROGRESS Re-implement the "parent/child association" code to use the return value from `myCreateElement`
