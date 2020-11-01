@@ -17,3 +17,7 @@ General clean ups, TODOs and things I wish to implement for this project:
 * Support Safari
 * Support Edge
 * DONE Fix the styling on the sidebar
+* Exercise the `myCreateElement` to make `<li>` elements *without* child elements. Will it work out-of-the-box? I don't
+  think it will. But this functionality needs to work because its design will be used as the basis for handling `<div>`
+  elements and beyond in `myCreateElement`. I will use the new "ConfigurationListing" component to create `<li>` 
+  elements without their own child elements. The `<li>` elements will just be text.
