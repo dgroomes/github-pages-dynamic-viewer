@@ -134,7 +134,7 @@ class SourceBrowser extends React.Component {
     render() {
         return myCreateElement('div', null,
             myCreateElement('div', {"id": "sidebar"},
-                myCreateElement('div', {"id": "directory-listing"}, myCreateElement('ul', null, this.state.directoryListing.map(file => {
+                myCreateElement('div', {"id": "directory-listing", "opt-in": true}, myCreateElement('ul', null, this.state.directoryListing.map(file => {
                     // NOTE: React really wants list items to have a key. So, assigning 'path' to the key because it
                     // is a unique identifier (rather, a key!).
                     return myCreateElement('li', {"key": file.path},

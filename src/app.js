@@ -1,7 +1,7 @@
 'use strict';
 
 window.elementIdCounter = 1
-window.untetheredElement = null
+window.untetheredElement = null // can we factor this out and instead code to untetheredElements?
 window.untetheredElements = []
 window.postReactElementCreationCallbacks = []
 
@@ -62,6 +62,25 @@ function myCreateElement(tagName, options, ...otherArgs) {
         return;
     }
 
+    // Now, onto the really hard one, the 'div' tag! The div tag is so generic: it can be inside of other elements and
+    // it can contain its own arbitrarily large collection of child elements. It's not as closed-loop as 'a' and 'li'.
+    //
+    // How do we possibly do this? Well, let's cheat and isolate the creation of 'div' tags to only those that opt-in.
+    // We will look for the field 'opt-in' in the 'options' argument.
+    //
+    // NOT YET IMPLEMENTED. Skipping this with a 'false' check because this doesn't work yet. I need to restructure the
+    // 'delayed work' model so it is more consolidated and easy to understand. Specifically, I need to join the 'untethered'
+    // stuff with the 'postReactElementCreationCallbacks' stuff and model it more simply.
+    if (false && tagName === 'div' && options !== null && options["opt-in"]) {
+        console.log("Creating an element ('div') *without* React.")
+        let el = document.createElement('div')
+        if (window.untetheredElements.length > 0) {
+            el.append(...window.untetheredElements)
+        }
+        window.untetheredElements = [el]
+        return;
+    }
+
     if (options == null) {
         options = {}
     }
@@ -80,12 +99,12 @@ function myCreateElement(tagName, options, ...otherArgs) {
     let untetheredElements = window.untetheredElements
     window.untetheredElements = []
     if (untetheredElements.length > 0) {
-        console.log("Registering a callback to push the untethered elements to this element *after* React is done doing it's thing.")
+        console.log(`Registering a callback to push the untethered elements (${untetheredElements.length}) to this element *after* React is done doing it's thing.`)
         window.postReactElementCreationCallbacks.push(() => {
             console.log(`Attaching untethered elements (${untetheredElements.length})`)
             let reactCreatedElement = document.getElementById(elementId)
             if (reactCreatedElement == null) {
-                console.log(`Something went wrong. Did not find an element for id ${elementId}. So, the untethered element will remain untethered (sad).`)
+                console.error(`Something went wrong. Did not find an element for id ${elementId}. So, the untethered element will remain untethered (sad).`)
                 return;
             }
 
