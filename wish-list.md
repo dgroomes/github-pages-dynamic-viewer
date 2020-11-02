@@ -7,8 +7,6 @@ General clean ups, TODOs and things I wish to implement for this project:
      * DONE Step one of removing babel is to remove our JSX source code. See [React without JSX](https://reactjs.org/docs/react-without-jsx.html) 
    * IN PROGRESS Remove React
    * Remove Marked.js. Instead, we can use GitHub's API to render the markdown
-* DONE Load all documents
-* DONE draw all documents to the screen (instead of replacing the previous content with the next doc's content)
 * Fix up the hash management stuff. This is a bit open-ended. How to make hashes work? I want to be able to click the
   name of a doc from the lefthand nav and have the browser navigate to that fragment. This is just a browser feature. No
   javascript involved.
@@ -16,6 +14,22 @@ General clean ups, TODOs and things I wish to implement for this project:
 * Support Chrome
 * Support Safari
 * Support Edge
+* IN PROGRESS De-react `<ul>` element creation
+  * IN PROGRESS Implementing requires addressing another problem: the clearing of existing content via the overly invasive
+    `parentEl.innerHTML = '';` assignment in the shim. That assignment was always a shortcoming but now it is revealing
+    itself as a real problem because it causes the `h3` "Configuration" heading to be deleted. How to solve this? This
+    is the heavy-hitting stuff and it would require us to actually re-implement React's virtual DOM diffing and other
+    state management things. I think for this toy app, the essential requirements of the app actually does not need
+    state management. Can we afford to kind of "squash" the lifecycle of the application to just an "initialization phase"
+    where it paints the DOM for the first time with all the data (the markdown directory listing and the document content)
+    and just be done with it? Locking in the initialization to just that would eliminate the problem of duplicating elements
+    in the DOM and thus free us from the virtual DOM diffing stuff (in theory)
+      * Design idea: can we keep track of all React components globally and track an "initialized flag"  
+
+### Finished *Wish List* items
+
+* DONE Load all documents
+* DONE draw all documents to the screen (instead of replacing the previous content with the next doc's content)
 * DONE Fix the styling on the sidebar
 * DONE Exercise the `myCreateElement` to make `<li>` elements *without* child elements. Will it work out-of-the-box? I don't
   think it will. But this functionality needs to work because its design will be used as the basis for handling `<div>`
@@ -26,16 +40,6 @@ General clean ups, TODOs and things I wish to implement for this project:
       at the same time. So, we must keep track of all of these groups at the same time. The "window.untetheredElements"
       must be an array and not a singular object.
 * DONE Re-write the "parent element identification" and tethering logic to be robust. 
-* De-react `<ul>` element creation
-  * Implementing requires addressing another problem: the clearing of existing content via the overly invasive
-    `parentEl.innerHTML = '';` assignment in the shim. That assignment was always a shortcoming but now it is revealing
-    itself as a real problem because it causes the `h3` "Configuration" heading to be deleted. How to solve this? This
-    is the heavy-hitting stuff and it would require us to actually re-implement React's virtual DOM diffing and other
-    state management things. I think for this toy app, the essential requirements of the app actually does not need
-    state management. Can we afford to kind of "squash" the lifecycle of the application to just an "initialization phase"
-    where it paints the DOM for the first time with all the data (the markdown directory listing and the document content)
-    and just be done with it? Locking in the initialization to just that would eliminate the problem of duplicating elements
-    in the DOM and thus free us from the virtual DOM diffing stuff (in theory)  
 * OBSOLETED Solve the "how many expected children are there?" problem
   * We've gotten pretty far by returning void in the `myCreateElement` function, but I think model fundamentally doesn't
     work. It would solve our problems if we could make this function actually return the elements that were created.
