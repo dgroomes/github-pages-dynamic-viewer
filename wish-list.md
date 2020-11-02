@@ -29,7 +29,13 @@ General clean ups, TODOs and things I wish to implement for this project:
 * De-react `<ul>` element creation
   * Implementing requires addressing another problem: the clearing of existing content via the overly invasive
     `parentEl.innerHTML = '';` assignment in the shim. That assignment was always a shortcoming but now it is revealing
-    itself as a real problem because it causes the `h3` "Configuration" heading to be deleted. How to solve this?
+    itself as a real problem because it causes the `h3` "Configuration" heading to be deleted. How to solve this? This
+    is the heavy-hitting stuff and it would require us to actually re-implement React's virtual DOM diffing and other
+    state management things. I think for this toy app, the essential requirements of the app actually does not need
+    state management. Can we afford to kind of "squash" the lifecycle of the application to just an "initialization phase"
+    where it paints the DOM for the first time with all the data (the markdown directory listing and the document content)
+    and just be done with it? Locking in the initialization to just that would eliminate the problem of duplicating elements
+    in the DOM and thus free us from the virtual DOM diffing stuff (in theory)  
 * OBSOLETED Solve the "how many expected children are there?" problem
   * We've gotten pretty far by returning void in the `myCreateElement` function, but I think model fundamentally doesn't
     work. It would solve our problems if we could make this function actually return the elements that were created.
