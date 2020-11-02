@@ -27,7 +27,7 @@ General clean ups, TODOs and things I wish to implement for this project:
       must be an array and not a singular object.
 * DONE Re-write the "parent element identification" and tethering logic to be robust. 
 * De-react `<ul>` element creation
-  * Implementing requires addressing another problem: the clearing of existing content via the overly invasive
+  * IN PROGRESS Implementing requires addressing another problem: the clearing of existing content via the overly invasive
     `parentEl.innerHTML = '';` assignment in the shim. That assignment was always a shortcoming but now it is revealing
     itself as a real problem because it causes the `h3` "Configuration" heading to be deleted. How to solve this? This
     is the heavy-hitting stuff and it would require us to actually re-implement React's virtual DOM diffing and other

@@ -191,7 +191,6 @@ function tetherElements() {
             console.error(`Something went wrong. Did not find an element for id ${parentElementIndex}. So, the untethered elements will remain untethered (sad).`)
             return;
         }
-        parentEl.innerHTML = ''; // the inner HTML often already contains content (and I don't totally know why, look at the logs) so clear it.
 
         // If any of the untethered elements are actually an array of untethered elements, then they need to be flattened
         elements = elements.flat()

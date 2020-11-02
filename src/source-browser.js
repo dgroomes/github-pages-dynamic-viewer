@@ -120,12 +120,17 @@ class SourceBrowser extends React.Component {
             });
     }
 
+    // EXPERIMENTAL- PROTOTYPE- only code. This shouldn't actually be used long term.
+    initialized = false
+
     componentDidUpdate() {
-        /**
-         * I don't think 'componentDidUpdate' is quite the perfect way to execute our vanilla JS manipulate-the-dom-by-hand
-         * code but it is effective. So, invoke our frameworky code to tether the untethered elements.
-         */
-        tetherElements()
+        if (this.initialized) {
+            console.warn(`[SourceBrowser] was already initialized. Will not tether elements again`)
+        } else {
+            console.log('[SourceBrowser] tethering elements')
+            tetherElements()
+            this.initialized = true
+        }
     }
 
     render() {

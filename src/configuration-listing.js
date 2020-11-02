@@ -10,15 +10,18 @@ class ConfigurationListing extends React.Component {
         }
     }
 
+    // EXPERIMENTAL- PROTOTYPE- only code. This shouldn't actually be used long term.
+    initialized = false
+
     componentDidMount() {
-        /**
-         * I don't think 'componentDidMount' is quite the perfect way to execute our vanilla JS manipulate-the-dom-by-hand
-         * code but it is effective. So, invoke our frameworky code to tether the untethered elements.
-         *
-         * This is unfortunate. Can we factor this out to a global place? Similar to what we did when we replaced the
-         * definition of React.createElement?
-         */
-        tetherElements()
+    // componentDidUpdate() {
+        if (this.initialized) {
+            console.warn(`[ConfigurationListing] was already initialized. Will not tether elements again`)
+        } else {
+            console.log('[ConfigurationListing] tethering elements')
+            tetherElements()
+            this.initialized = true
+        }
     }
 
     render() {
