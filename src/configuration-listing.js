@@ -10,10 +10,21 @@ class ConfigurationListing extends React.Component {
         }
     }
 
+    componentDidMount() {
+        /**
+         * I don't think 'componentDidMount' is quite the perfect way to execute our vanilla JS manipulate-the-dom-by-hand
+         * code but it is effective. So, invoke our frameworky code to tether the untethered elements.
+         *
+         * This is unfortunate. Can we factor this out to a global place? Similar to what we did when we replaced the
+         * definition of React.createElement?
+         */
+        tetherElements()
+    }
+
     render() {
         let configurationElements = Object.entries(window.config).map(([key, value], _idx) => {
             let content = `${key}: ${value}`
-            return React.createElement('p', { "key": key }, content)
+            return React.createElement('li', { "key": key }, content)
         })
 
         return React.createElement('div', null,

@@ -14,7 +14,6 @@ window.untetheredElements = []
 // Re-define React.createElement
 // Facade the original implementation with our own myCreateElement function
 let originalReactCreateElement = React.createElement
-console.log(`The original React.createElement function:\n ${originalReactCreateElement}`)
 console.log(`Re-assigning the React.createElement to a custom facade`)
 React.createElement = myCreateElement
 
@@ -147,7 +146,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
                 if (isLegalNonArrayElement(nestedArg)) {
                     nestedLegalArgs.push(nestedArg)
                 } else {
-                    console.warn(`Detected illegal argument (${nestedArg.tagName}) within an Array in the request to 'React.createElement. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
+                    console.warn(`Detected illegal argument (${nestedArg.tagName}) within an Array in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
                     nestedUntetheredElements.push(nestedArg)
                 }
             })
@@ -160,7 +159,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
         } else if (isLegalNonArrayElement(arg)) {
             legalArgs.push(arg)
         } else {
-            console.warn(`Detected illegal argument (${arg.tagName}) in the request to 'React.createElement'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
+            console.warn(`Detected illegal argument (${arg.tagName}) in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
             untetheredElements.push(arg)
         }
     }
@@ -189,7 +188,7 @@ function tetherElements() {
         console.log(`Tethering untethered elements (${elements.length})`)
         let parentEl = document.querySelector(`[data-index="${parentElementIndex}"]`)
         if (parentEl == null) {
-            console.error(`Something went wrong. Did not find an element for id ${elementId}. So, the untethered elements will remain untethered (sad).`)
+            console.error(`Something went wrong. Did not find an element for id ${parentElementIndex}. So, the untethered elements will remain untethered (sad).`)
             return;
         }
         parentEl.innerHTML = ''; // the inner HTML often already contains content (and I don't totally know why, look at the logs) so clear it.
