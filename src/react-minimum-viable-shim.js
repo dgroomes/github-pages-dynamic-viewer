@@ -9,7 +9,10 @@ window.indexCounter = 0
  * bridging mechanism between React and the frameworky vanilla JS written in this shim.
  */
 window.untetheredElements = []
-
+/*
+ * PROTOTYPE/EXPERIMENTAL. Can we keep track of all React components globally?
+ */
+window.reactComponents = new Map()
 
 // Re-define React.createElement
 // Facade the original implementation with our own myCreateElement function
@@ -146,7 +149,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
                 if (isLegalNonArrayElement(nestedArg)) {
                     nestedLegalArgs.push(nestedArg)
                 } else {
-                    console.warn(`Detected illegal argument (${nestedArg.tagName}) within an Array in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
+                    console.log(`Detected illegal argument (${nestedArg.tagName}) within an Array in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
                     nestedUntetheredElements.push(nestedArg)
                 }
             })
@@ -159,7 +162,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
         } else if (isLegalNonArrayElement(arg)) {
             legalArgs.push(arg)
         } else {
-            console.warn(`Detected illegal argument (${arg.tagName}) in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
+            console.log(`Detected illegal argument (${arg.tagName}) in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
             untetheredElements.push(arg)
         }
     }
@@ -177,7 +180,21 @@ function myCreateElement(tagName, options, ...otherArgs) {
 /**
  * Tether the groups of untethered elements
  */
-function tetherElements() {
+function tetherElements(component) {
+    // DEBUG
+    console.log(`Globally-tracked React components: ${JSON.stringify(...window.reactComponents.values())}`)
+
+    let metaData = window.reactComponents.get(component);
+    if (metaData === undefined) {
+        console.error(`Failed to find the meta data for component ${component.constructor.name}`)
+    } else {
+        console.warn(`[tetherElements] this component's meta data: ${JSON.stringify(metaData, null, 2)}`)
+        if (metaData.hasTethered) {
+            console.warn(`[tetherElements] this component has already executed the tethering process. Skipping it.`)
+            return
+        }
+    }
+
     if (window.untetheredElements.length === 0) {
         console.log("There are no elements to tether")
         return
@@ -186,24 +203,28 @@ function tetherElements() {
     for (let i = 0; i < window.untetheredElements.length; i++) {
         let {elements, parentElementIndex} = window.untetheredElements[i]
         console.log(`Tethering untethered elements (${elements.length})`)
-        let parentEl = document.querySelector(`[data-index="${parentElementIndex}"]`)
-        if (parentEl == null) {
+        let parent = document.querySelector(`[data-index="${parentElementIndex}"]`)
+        if (parent == null) {
             console.error(`Something went wrong. Did not find an element for id ${parentElementIndex}. So, the untethered elements will remain untethered (sad).`)
             return;
         }
-        parentEl.innerHTML = ''; // the inner HTML often already contains content (and I don't totally know why, look at the logs) so clear it.
+        // parentEl.innerHTML = ''; // the inner HTML often already contains content (and I don't totally know why, look at the logs) so clear it.
 
         // If any of the untethered elements are actually an array of untethered elements, then they need to be flattened
         elements = elements.flat()
 
         while (elements.length > 0) {
-            let el = elements.pop()
-            console.log(`Tethering untethered element '${el.tagName}' to '${parentEl.tagName}`)
-            parentEl.appendChild(el);
+            let child = elements.pop()
+            console.log(`Tethering untethered element '${child.tagName}' to '${parent.tagName}`)
+            parent.appendChild(child);
         }
     }
 
     // All groups of elements should have been successfully tethered to the DOM at this point. So, zero out the
     // "untethered elements" reference
     window.untetheredElements = []
+
+    // EXPERIMENTAL
+    // Mark this component has initialized ("hasTethered = true")
+    metaData.hasTethered = true
 }

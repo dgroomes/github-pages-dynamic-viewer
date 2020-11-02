@@ -24,8 +24,13 @@ General clean ups, TODOs and things I wish to implement for this project:
     where it paints the DOM for the first time with all the data (the markdown directory listing and the document content)
     and just be done with it? Locking in the initialization to just that would eliminate the problem of duplicating elements
     in the DOM and thus free us from the virtual DOM diffing stuff (in theory)
-      * Design idea: can we keep track of all React components globally and track an "initialized flag"  
-
+      * Design idea: can we keep track of all React components globally and track an "initialized flag"? Answer: yes
+      * Design idea #2: in `React.createElement` (or the facade) do we have access to the component instance? Is it
+        equal to the `this` reference? If so, we have any easy view of the overall state and can reference our
+        "initialization/tethering" states. UPDATE: now I'm confused but curious; at runtime, `this` is equal to React's
+        global context thing when the execution is inside `myCreateElement`. I really don't get that. How does that work?
+        Shouldn't `this` be equal to either the component itself (if you go up one frame in the call stack, `this` does indeed
+        become the Component instance, for example SourceBrowser) or `window`? I'm bewildered. 
 ### Finished *Wish List* items
 
 * DONE Load all documents

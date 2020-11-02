@@ -1,5 +1,3 @@
-'use strict';
-
 class App extends React.PureComponent {
 
     constructor(props) {
