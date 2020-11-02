@@ -27,6 +27,9 @@ General clean ups, TODOs and things I wish to implement for this project:
       must be an array and not a singular object.
 * DONE Re-write the "parent element identification" and tethering logic to be robust. 
 * De-react `<ul>` element creation
+  * Implementing requires addressing another problem: the clearing of existing content via the overly invasive
+    `parentEl.innerHTML = '';` assignment in the shim. That assignment was always a shortcoming but now it is revealing
+    itself as a real problem because it causes the `h3` "Configuration" heading to be deleted. How to solve this?
 * OBSOLETED Solve the "how many expected children are there?" problem
   * We've gotten pretty far by returning void in the `myCreateElement` function, but I think model fundamentally doesn't
     work. It would solve our problems if we could make this function actually return the elements that were created.
