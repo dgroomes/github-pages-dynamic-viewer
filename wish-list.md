@@ -14,8 +14,8 @@ General clean ups, TODOs and things I wish to implement for this project:
 * Support Chrome
 * Support Safari
 * Support Edge
-* IN PROGRESS De-react `<ul>` element creation
-  * IN PROGRESS Implementing requires addressing another problem: the clearing of existing content via the overly invasive
+* DONE De-react `<ul>` element creation
+  * DONE Implementing requires addressing another problem: the clearing of existing content via the overly invasive
     `parentEl.innerHTML = '';` assignment in the shim. That assignment was always a shortcoming but now it is revealing
     itself as a real problem because it causes the `h3` "Configuration" heading to be deleted. How to solve this? This
     is the heavy-hitting stuff and it would require us to actually re-implement React's virtual DOM diffing and other

@@ -76,8 +76,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
         el = document.createElement('li');
     }
 
-    // UNIMPLEMENTED. I got ahead of myself again. I have to roll this back.
-    if (false && tagName === 'ul') {
+    if (tagName === 'ul') {
         useReact = false
         isAParentNode = otherArgs.length > 0 // although... by definition this is a "parent node" right? Of course when there happen to be no children than it is not a parent, but by design a "unordered list" element is supposed to contain children
         console.log("Creating an element ('ul') *without* React.")
