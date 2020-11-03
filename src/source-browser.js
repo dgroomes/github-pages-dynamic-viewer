@@ -120,14 +120,6 @@ class SourceBrowser extends BaseComponent {
             });
     }
 
-    componentDidUpdate() {
-        /**
-         * I don't think 'componentDidUpdate' is quite the perfect way to execute our vanilla JS manipulate-the-dom-by-hand
-         * code but it is effective. So, invoke our frameworky code to tether the untethered elements.
-         */
-        tetherElements(this)
-    }
-
     render() {
         return React.createElement('div', null,
             React.createElement('div', {"id": "sidebar"},

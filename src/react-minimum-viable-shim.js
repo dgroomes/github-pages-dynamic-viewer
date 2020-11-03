@@ -231,7 +231,7 @@ function tetherElements(component) {
         }
 
         if (targetComponentMetaData.hasTethered) {
-            console.error(`${preamble}This component has already executed the tethering process. Skipping it.`)
+            console.info(`${preamble}This component has already executed the tethering process. Skipping it.`)
             continue
         }
 

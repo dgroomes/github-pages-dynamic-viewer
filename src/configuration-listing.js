@@ -10,17 +10,6 @@ class ConfigurationListing extends BaseComponent {
         }
     }
 
-    componentDidMount() {
-        /**
-         * I don't think 'componentDidMount' is quite the perfect way to execute our vanilla JS manipulate-the-dom-by-hand
-         * code but it is effective. So, invoke our frameworky code to tether the untethered elements.
-         *
-         * This is unfortunate. Can we factor this out to a global place? Similar to what we did when we replaced the
-         * definition of React.createElement?
-         */
-        tetherElements(this)
-    }
-
     render() {
         let configurationElements = Object.entries(this.state.config).map(([key, value], _idx) => {
             let content = `${key}: ${value}`

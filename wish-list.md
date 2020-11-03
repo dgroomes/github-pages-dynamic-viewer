@@ -16,7 +16,7 @@ General clean ups, TODOs and things I wish to implement for this project:
 * Support Edge
 * Can we re-assign React.Component to the BaseComponent so that our app's components don't even have to change their `class ... extends`
   to use it and can just continue to use React.Component?
-* Push the calls to "tetherComponents" into BaseComponent using the "constructor trick + Proxy" mechanism I discovered in the
+* DONE Push the calls to "tetherComponents" into BaseComponent using the "constructor trick + Proxy" mechanism I discovered in the
   prototype branch instead of in the component classes themselves via `componentDidUpdate`
      
 ### Finished *Wish List* items
