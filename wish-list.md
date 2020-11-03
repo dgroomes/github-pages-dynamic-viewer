@@ -14,39 +14,10 @@ General clean ups, TODOs and things I wish to implement for this project:
 * Support Chrome
 * Support Safari
 * Support Edge
-* DONE De-react `<ul>` element creation
-  * DONE Implementing requires addressing another problem: the clearing of existing content via the overly invasive
-    `parentEl.innerHTML = '';` assignment in the shim. That assignment was always a shortcoming but now it is revealing
-    itself as a real problem because it causes the `h3` "Configuration" heading to be deleted. How to solve this? This
-    is the heavy-hitting stuff and it would require us to actually re-implement React's virtual DOM diffing and other
-    state management things. I think for this toy app, the essential requirements of the app actually does not need
-    state management. Can we afford to kind of "squash" the lifecycle of the application to just an "initialization phase"
-    where it paints the DOM for the first time with all the data (the markdown directory listing and the document content)
-    and just be done with it? Locking in the initialization to just that would eliminate the problem of duplicating elements
-    in the DOM and thus free us from the virtual DOM diffing stuff (in theory)
-      * Design idea: can we keep track of all React components globally and track an "initialized flag"? Answer: yes
-      * Design idea #2: in `React.createElement` (or the facade) do we have access to the component instance? Is it
-        equal to the `this` reference? If so, we have any easy view of the overall state and can reference our
-        "initialization/tethering" states. UPDATE: now I'm confused but curious; at runtime, `this` is equal to React's
-        global context thing when the execution is inside `myCreateElement`. I really don't get that. How does that work?
-        Shouldn't `this` be equal to either the component itself (if you go up one frame in the call stack, `this` does indeed
-        become the Component instance, for example SourceBrowser) or `window`? I'm bewildered. UPDATE: Oh it should be obvious,
-        when I invoke `React.createElement` of course the `this` is `React`. I must have been thinking in terms of Java and `static`
-        methods where there is no `this` but `React` *is* indeed an object and therefore a `this`.
-      * Design idea 2b:
-        1. DOES NOT WORK (in JavaScript classes, you need to use `this` to reference instance properties so I would have to change the React API for `React.createElement` to `this.React.createElement` which I won't do) Hackery to get `this` to reference the instances. Prototype a `MyReactComponent` base class that sets an instance
-           field named `React` which should shadow the actual `React`. This will probably be a problem and so actually
-           make the field be a [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
-           to the real React.
-        2. Implement a kind of "gate" strategy where on any calls to `render`, we will set a `hasRendered` flag for the component
-           which we should be able to do if we get `this` working. Then, on calls to `tetherElements` we will check the
-           parent element and traverse to its owning React component (using <https://stackoverflow.com/a/39165137>) and check
-           a flag called `hasTethered`. If false, then do the tethering and then set the flag to true. If true, then skip.
-           This should ensure that a particular instance of a React component only ever initializes once, which of course
-           is not at all what React is about but it does satisfy our own toy app, and thus our "requirements".
-      * DONE Design idea #3: Can we proxy the `render` method and add our own pointcut? That's all we really want, so we can
-        add code to only actually execute it once. ANSWER: yes we can! See `base-component.js`.
-          * Do the "gate" thing described in "Design idea 2b.2"          
+* Can we re-assign React.Component to the BaseComponent so that our app's components don't even have to change their `class ... extends`
+  to use it and can just continue to use React.Component?
+* Push the calls to "tetherComponents" into BaseComponent using the "constructor trick + Proxy" mechanism I discovered in the
+  prototype branch instead of in the component classes themselves via `componentDidUpdate`
      
 ### Finished *Wish List* items
 
@@ -79,3 +50,36 @@ General clean ups, TODOs and things I wish to implement for this project:
     handling in the framework. In my case I chose to duplicate the handling code for non-arrays with the handling code
     for arrays instead of getting too abstract and frameworky. "Non-frameworky" is the whole spirit of this application
     after all because we are trying to remove the framework (React)!
+* DONE De-react `<ul>` element creation
+* DONE Implementing requires addressing another problem: the clearing of existing content via the overly invasive
+  `parentEl.innerHTML = '';` assignment in the shim. That assignment was always a shortcoming but now it is revealing
+  itself as a real problem because it causes the `h3` "Configuration" heading to be deleted. How to solve this? This
+  is the heavy-hitting stuff and it would require us to actually re-implement React's virtual DOM diffing and other
+  state management things. I think for this toy app, the essential requirements of the app actually does not need
+  state management. Can we afford to kind of "squash" the lifecycle of the application to just an "initialization phase"
+  where it paints the DOM for the first time with all the data (the markdown directory listing and the document content)
+  and just be done with it? Locking in the initialization to just that would eliminate the problem of duplicating elements
+  in the DOM and thus free us from the virtual DOM diffing stuff (in theory)
+    * Design idea: can we keep track of all React components globally and track an "initialized flag"? Answer: yes
+    * Design idea #2: in `React.createElement` (or the facade) do we have access to the component instance? Is it
+      equal to the `this` reference? If so, we have any easy view of the overall state and can reference our
+      "initialization/tethering" states. UPDATE: now I'm confused but curious; at runtime, `this` is equal to React's
+      global context thing when the execution is inside `myCreateElement`. I really don't get that. How does that work?
+      Shouldn't `this` be equal to either the component itself (if you go up one frame in the call stack, `this` does indeed
+      become the Component instance, for example SourceBrowser) or `window`? I'm bewildered. UPDATE: Oh it should be obvious,
+      when I invoke `React.createElement` of course the `this` is `React`. I must have been thinking in terms of Java and `static`
+      methods where there is no `this` but `React` *is* indeed an object and therefore a `this`.
+    * Design idea 2b:
+      1. DOES NOT WORK (in JavaScript classes, you need to use `this` to reference instance properties so I would have to change the React API for `React.createElement` to `this.React.createElement` which I won't do) Hackery to get `this` to reference the instances. Prototype a `MyReactComponent` base class that sets an instance
+         field named `React` which should shadow the actual `React`. This will probably be a problem and so actually
+         make the field be a [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
+         to the real React.
+      2. Implement a kind of "gate" strategy where on any calls to `render`, we will set a `hasRendered` flag for the component
+         which we should be able to do if we get `this` working. Then, on calls to `tetherElements` we will check the
+         parent element and traverse to its owning React component (using <https://stackoverflow.com/a/39165137>) and check
+         a flag called `hasTethered`. If false, then do the tethering and then set the flag to true. If true, then skip.
+         This should ensure that a particular instance of a React component only ever initializes once, which of course
+         is not at all what React is about but it does satisfy our own toy app, and thus our "requirements".
+    * DONE Design idea #3: Can we proxy the `render` method and add our own pointcut? That's all we really want, so we can
+      add code to only actually execute it once. ANSWER: yes we can! See `base-component.js`.
+        * Do the "gate" thing described in "Design idea 2b.2"          
