@@ -23,7 +23,7 @@ class BaseComponent extends React.Component {
                     return function instrumentedRender() {
                         console.log(`[BaseComponent/${targetType}] "instrumentedRender" was invoked (${renderInvocationCount}). TODO instrument this`)
                         renderInvocationCount++
-                        return resolvedProp()
+                        return resolvedProp.bind(receiver)(...arguments) // whoa! this is some out-of-control framework code!
                     }
                 } else {
                     return resolvedProp
