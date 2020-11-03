@@ -33,7 +33,7 @@ General clean ups, TODOs and things I wish to implement for this project:
         become the Component instance, for example SourceBrowser) or `window`? I'm bewildered. UPDATE: Oh it should be obvious,
         when I invoke `React.createElement` of course the `this` is `React`. I must have been thinking in terms of Java and `static`
         methods where there is no `this` but `React` *is* indeed an object and therefore a `this`.
-      * DOES NOT WORK Design idea 2b:
+      * Design idea 2b:
         1. DOES NOT WORK (in JavaScript classes, you need to use `this` to reference instance properties so I would have to change the React API for `React.createElement` to `this.React.createElement` which I won't do) Hackery to get `this` to reference the instances. Prototype a `MyReactComponent` base class that sets an instance
            field named `React` which should shadow the actual `React`. This will probably be a problem and so actually
            make the field be a [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
@@ -44,8 +44,9 @@ General clean ups, TODOs and things I wish to implement for this project:
            a flag called `hasTethered`. If false, then do the tethering and then set the flag to true. If true, then skip.
            This should ensure that a particular instance of a React component only ever initializes once, which of course
            is not at all what React is about but it does satisfy our own toy app, and thus our "requirements".
-      * Design idea #3: Can we proxy the `render` method and add our own pointcut? That's all we really want, so we can
+      * DONE Design idea #3: Can we proxy the `render` method and add our own pointcut? That's all we really want, so we can
         add code to only actually execute it once. ANSWER: yes we can! See `base-component.js`.
+          * Do the "gate" thing described in "Design idea 2b.2"          
      
 ### Finished *Wish List* items
 

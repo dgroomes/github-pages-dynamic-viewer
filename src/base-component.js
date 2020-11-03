@@ -14,6 +14,12 @@ class BaseComponent extends React.Component {
         console.log(`[BaseComponent] Hello!`)
         let renderAccessCount = 0
         let renderInvocationCount = 0
+        let metaData = {
+            type: this.constructor.name,
+            hasRendered: false,
+            hasTethered: false
+        }
+
         let handler = {
             get: function(target, prop, receiver) {
                 let resolvedProp = Reflect.get(...arguments)
@@ -26,15 +32,18 @@ class BaseComponent extends React.Component {
                         let preamble = `[BaseComponent/${targetType}]`
                         console.log(`${preamble}: "instrumentedRender" was invoked (${renderInvocationCount}). TODO instrument this`)
                         let result = resolvedProp.bind(receiver)(...arguments) // whoa! this is some out-of-control framework code!
+                        metaData.hasRendered = true
                         console.log(`${preamble}: "render" completed`)
                         return result
                     }
                 } else {
                     return resolvedProp
                 }
-
             }
         }
-        return new Proxy(this, handler)
+
+        let proxy = new Proxy(this, handler);
+        window.reactComponents.set(proxy, metaData)
+        return proxy
     }
 }

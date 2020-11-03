@@ -209,11 +209,32 @@ function tetherElements(component) {
         let {elements, parentElementIndex} = window.untetheredElements[i]
         console.log(`Tethering untethered elements (${elements.length})`)
         let parent = document.querySelector(`[data-index="${parentElementIndex}"]`)
-        if (parent == null) {
+        if (parent === null) {
             console.error(`Something went wrong. Did not find an element for id ${parentElementIndex}. So, the untethered elements will remain untethered (sad).`)
             return;
         }
-        // parentEl.innerHTML = ''; // the inner HTML often already contains content (and I don't totally know why, look at the logs) so clear it.
+
+        /*
+         * To handle the case where a sub-component of the component is being tethered, we must identify the
+         * sub-component and identify its "hasTethered" status before tethering.
+         */
+        let targetComponent = findReactAncestor(parent);
+        if (targetComponent === null) {
+            console.error(`Something went wrong. Did not find an ancestor React component for the given DOM element`)
+            return;
+        }
+        let targetComponentMetaData
+        if (targetComponent === component) {
+            console.info("The target component is the same as the overall component")
+            targetComponentMetaData = metaData
+        } else {
+            targetComponentMetaData = window.reactComponents.get(targetComponent)
+        }
+
+        if (targetComponentMetaData.hasTethered) {
+            console.error(`This component has already executed the tethering process. Skipping it.`)
+            continue
+        }
 
         // If any of the untethered elements are actually an array of untethered elements, then they need to be flattened
         elements = elements.flat()
@@ -232,4 +253,39 @@ function tetherElements(component) {
     // EXPERIMENTAL
     // Mark this component has initialized ("hasTethered = true")
     metaData.hasTethered = true
+}
+
+/**
+ * Copied from https://stackoverflow.com/questions/29321742/react-getting-a-component-from-a-dom-element-for-debugging/39165137#39165137
+ *
+ * Find a React component that is an ancestor of a DOM node. It will look through parent elements  up until it finds one.
+ */
+function findReactAncestor(dom, traverseUp = 0) {
+    const key = Object.keys(dom).find(key=>key.startsWith("__reactInternalInstance$"));
+    const domFiber = dom[key];
+    if (domFiber == null) return null;
+
+    // react <16
+    if (domFiber._currentElement) {
+        let compFiber = domFiber._currentElement._owner;
+        for (let i = 0; i < traverseUp; i++) {
+            compFiber = compFiber._currentElement._owner;
+        }
+        return compFiber._instance;
+    }
+
+    // react 16+
+    const GetCompFiber = fiber=>{
+        //return fiber._debugOwner; // this also works, but is __DEV__ only
+        let parentFiber = fiber.return;
+        while (typeof parentFiber.type == "string") {
+            parentFiber = parentFiber.return;
+        }
+        return parentFiber;
+    };
+    let compFiber = GetCompFiber(domFiber);
+    for (let i = 0; i < traverseUp; i++) {
+        compFiber = GetCompFiber(compFiber);
+    }
+    return compFiber.stateNode;
 }
