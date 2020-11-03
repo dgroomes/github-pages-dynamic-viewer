@@ -12,15 +12,23 @@ class BaseComponent extends React.Component {
     constructor() {
         super();
         console.log(`[BaseComponent] Hello!`)
+        let renderAccessCount = 0
         let renderInvocationCount = 0
         let handler = {
             get: function(target, prop, receiver) {
+                let resolvedProp = Reflect.get(...arguments)
                 if (prop === "render") {
                     let targetType = target.constructor.name
-                    renderInvocationCount++
-                    console.log(`[BaseComponent/${targetType}] "render" was called (${renderInvocationCount}). TODO instrument this`)
+                    console.log(`[BaseComponent/${targetType}] "render" was accessed (${renderAccessCount}).`)
+                    return function instrumentedRender() {
+                        console.log(`[BaseComponent/${targetType}] "instrumentedRender" was invoked (${renderInvocationCount}). TODO instrument this`)
+                        renderInvocationCount++
+                        return resolvedProp()
+                    }
+                } else {
+                    return resolvedProp
                 }
-                return Reflect.get(...arguments)
+
             }
         }
         return new Proxy(this, handler)
