@@ -19,11 +19,15 @@ class BaseComponent extends React.Component {
                 let resolvedProp = Reflect.get(...arguments)
                 if (prop === "render") {
                     let targetType = target.constructor.name
+                    renderAccessCount++
                     console.log(`[BaseComponent/${targetType}] "render" was accessed (${renderAccessCount}).`)
                     return function instrumentedRender() {
-                        console.log(`[BaseComponent/${targetType}] "instrumentedRender" was invoked (${renderInvocationCount}). TODO instrument this`)
                         renderInvocationCount++
-                        return resolvedProp.bind(receiver)(...arguments) // whoa! this is some out-of-control framework code!
+                        let preamble = `[BaseComponent/${targetType}]`
+                        console.log(`${preamble}: "instrumentedRender" was invoked (${renderInvocationCount}). TODO instrument this`)
+                        let result = resolvedProp.bind(receiver)(...arguments) // whoa! this is some out-of-control framework code!
+                        console.log(`${preamble}: "render" completed`)
+                        return result
                     }
                 } else {
                     return resolvedProp
