@@ -4,7 +4,7 @@
  * Shows a directory listing on the left-hand side of the page that includes all ".md" files in the git repo. The files
  * can be navigated to by clicking on them (NOT YET IMPLEMENTED). The contents of all files show on the right-hand side.
  */
-class SourceBrowser extends React.Component {
+class SourceBrowser extends BaseComponent {
 
     constructor(props) {
         super(props);
@@ -125,7 +125,7 @@ class SourceBrowser extends React.Component {
          * I don't think 'componentDidUpdate' is quite the perfect way to execute our vanilla JS manipulate-the-dom-by-hand
          * code but it is effective. So, invoke our frameworky code to tether the untethered elements.
          */
-        tetherElements()
+        tetherElements(this)
     }
 
     render() {

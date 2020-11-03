@@ -1,7 +1,7 @@
 /**
  * A read-only view of the app's configuration.
  */
-class ConfigurationListing extends React.Component {
+class ConfigurationListing extends BaseComponent {
 
     constructor(props) {
         super(props);
@@ -18,11 +18,11 @@ class ConfigurationListing extends React.Component {
          * This is unfortunate. Can we factor this out to a global place? Similar to what we did when we replaced the
          * definition of React.createElement?
          */
-        tetherElements()
+        tetherElements(this)
     }
 
     render() {
-        let configurationElements = Object.entries(window.config).map(([key, value], _idx) => {
+        let configurationElements = Object.entries(this.state.config).map(([key, value], _idx) => {
             let content = `${key}: ${value}`
             return React.createElement('li', { "key": key }, content)
         })

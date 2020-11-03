@@ -1,7 +1,11 @@
 // WORK IN PROGRESS
 //
-// This is the minimum viable shim code I need to remove the React library from this application (or rather, this
-// isn't much of an application as it is a simple web page that uses a bit of React features).
+// This is the minimum viable shim code I need to re-implement the React API. What makes this a "minimum viable shim" is
+// that I only need to re-implement enough of the React API so that my app can work. Because it is a toy app, it only
+// uses a small part of React's features, and so I can omit all of those features in the shim's implementation. In other
+// words, this shim is designed only for my own use case and is *not re-usable* by any other project. It is an exercise
+// for my own learning and it does serve as a working example of how to factor out a library dependency in a
+// non-invasive way to an existing codebase.
 
 window.indexCounter = 0
 /*
@@ -9,7 +13,10 @@ window.indexCounter = 0
  * bridging mechanism between React and the frameworky vanilla JS written in this shim.
  */
 window.untetheredElements = []
-
+/*
+ * Keeping track of metadata across all React components globally
+ */
+window.reactComponents = new Map()
 
 // Re-define React.createElement
 // Facade the original implementation with our own myCreateElement function
@@ -26,6 +33,7 @@ React.createElement = myCreateElement
  * - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters
  * - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax
  * - https://indepth.dev/inside-fiber-in-depth-overview-of-the-new-reconciliation-algorithm-in-react/
+ * - https://stackoverflow.com/a/39165137
  *
  * This is a work-in-progress effort. For some elements, this method use React to create the element, but for other
  * elements it will use my own frameworky JS code to create an "untethered" element and attach it to a parent element
@@ -146,7 +154,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
                 if (isLegalNonArrayElement(nestedArg)) {
                     nestedLegalArgs.push(nestedArg)
                 } else {
-                    console.warn(`Detected illegal argument (${nestedArg.tagName}) within an Array in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
+                    console.log(`Detected illegal argument (${nestedArg.tagName}) within an Array in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
                     nestedUntetheredElements.push(nestedArg)
                 }
             })
@@ -159,7 +167,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
         } else if (isLegalNonArrayElement(arg)) {
             legalArgs.push(arg)
         } else {
-            console.warn(`Detected illegal argument (${arg.tagName}) in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
+            console.log(`Detected illegal argument (${arg.tagName}) in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
             untetheredElements.push(arg)
         }
     }
@@ -177,33 +185,97 @@ function myCreateElement(tagName, options, ...otherArgs) {
 /**
  * Tether the groups of untethered elements
  */
-function tetherElements() {
+function tetherElements(component) {
+    let componentType = component.constructor.name
+    let preamble = `[tetherElements ${componentType}]: `
+
+    let metaData = window.reactComponents.get(component);
+    if (metaData === undefined) {
+        console.error(`${preamble}Failed to find the meta data for the component`)
+    } else {
+        console.info(`${preamble}This component's meta data: ${JSON.stringify(metaData, null, 2)}`)
+        if (metaData.hasTethered) {
+            console.info(`${preamble}This component has already executed the tethering process. Skipping it.`)
+            return
+        }
+    }
+
     if (window.untetheredElements.length === 0) {
-        console.log("There are no elements to tether")
+        console.log(`${preamble}There are no elements to tether`)
         return
     }
 
     for (let i = 0; i < window.untetheredElements.length; i++) {
         let {elements, parentElementIndex} = window.untetheredElements[i]
-        console.log(`Tethering untethered elements (${elements.length})`)
-        let parentEl = document.querySelector(`[data-index="${parentElementIndex}"]`)
-        if (parentEl == null) {
-            console.error(`Something went wrong. Did not find an element for id ${parentElementIndex}. So, the untethered elements will remain untethered (sad).`)
+        console.log(`${preamble}Tethering untethered elements (${elements.length})`)
+        let parent = document.querySelector(`[data-index="${parentElementIndex}"]`)
+        if (parent === null) {
+            console.error(`${preamble}Something went wrong. Did not find an element for id ${parentElementIndex}. So, the untethered elements will remain untethered (sad).`)
             return;
         }
-        parentEl.innerHTML = ''; // the inner HTML often already contains content (and I don't totally know why, look at the logs) so clear it.
+
+        /*
+         * To handle the case where a sub-component of the component is being tethered, we must identify the
+         * sub-component and identify its "hasTethered" status before tethering.
+         */
+        let targetComponent = findReactAncestor(parent);
+        if (targetComponent === null) {
+            console.error(`${preamble}Something went wrong. Did not find an ancestor React component for the given DOM element`)
+            return;
+        }
+        let targetComponentMetaData
+        if (targetComponent === component) {
+            console.info(`${preamble}The target component is the same as the overall component`)
+            targetComponentMetaData = metaData
+        } else {
+            targetComponentMetaData = window.reactComponents.get(targetComponent)
+        }
+
+        if (targetComponentMetaData.hasTethered) {
+            console.error(`${preamble}This component has already executed the tethering process. Skipping it.`)
+            continue
+        }
 
         // If any of the untethered elements are actually an array of untethered elements, then they need to be flattened
         elements = elements.flat()
 
         while (elements.length > 0) {
-            let el = elements.pop()
-            console.log(`Tethering untethered element '${el.tagName}' to '${parentEl.tagName}`)
-            parentEl.appendChild(el);
+            let child = elements.pop()
+            console.log(`${preamble}Tethering untethered element '${child.tagName}' to '${parent.tagName}`)
+            parent.appendChild(child);
         }
     }
 
     // All groups of elements should have been successfully tethered to the DOM at this point. So, zero out the
     // "untethered elements" reference
     window.untetheredElements = []
+
+    // Mark this component has initialized ("hasTethered = true")
+    metaData.hasTethered = true
+}
+
+/**
+ * Copied from https://stackoverflow.com/questions/29321742/react-getting-a-component-from-a-dom-element-for-debugging/39165137#39165137
+ *
+ * Find a React component that is an ancestor of a DOM node. It will look through parent elements  up until it finds one.
+ */
+function findReactAncestor(dom, traverseUp = 0) {
+    const key = Object.keys(dom).find(key=>key.startsWith("__reactInternalInstance$"));
+    const domFiber = dom[key];
+    if (domFiber == null) return null;
+
+    // react 16+
+    const GetCompFiber = fiber=>{
+        //return fiber._debugOwner; // this also works, but is __DEV__ only
+        let parentFiber = fiber.return;
+        while (typeof parentFiber.type == "string") {
+            parentFiber = parentFiber.return;
+        }
+        return parentFiber;
+    };
+    let compFiber = GetCompFiber(domFiber);
+    for (let i = 0; i < traverseUp; i++) {
+        compFiber = GetCompFiber(compFiber);
+    }
+    return compFiber.stateNode;
 }
