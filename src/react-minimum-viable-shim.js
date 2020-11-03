@@ -14,7 +14,7 @@ window.indexCounter = 0
  */
 window.untetheredElements = []
 /*
- * PROTOTYPE/EXPERIMENTAL. Can we keep track of all React components globally?
+ * Keeping track of metadata across all React components globally
  */
 window.reactComponents = new Map()
 

@@ -125,8 +125,6 @@ class SourceBrowser extends BaseComponent {
         /**
          * I don't think 'componentDidUpdate' is quite the perfect way to execute our vanilla JS manipulate-the-dom-by-hand
          * code but it is effective. So, invoke our frameworky code to tether the untethered elements.
-         *
-         * TODO push this into BaseComponent
          */
         tetherElements(this)
     }

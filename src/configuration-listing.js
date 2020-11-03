@@ -8,7 +8,6 @@ class ConfigurationListing extends BaseComponent {
         this.state = {
             config: window.config
         }
-        this.render = this.render.bind(this);
     }
 
     componentDidMount() {
@@ -18,8 +17,6 @@ class ConfigurationListing extends BaseComponent {
          *
          * This is unfortunate. Can we factor this out to a global place? Similar to what we did when we replaced the
          * definition of React.createElement?
-         *
-         * TODO push this into BaseComponent
          */
         tetherElements(this)
     }
