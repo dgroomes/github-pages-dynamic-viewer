@@ -14,6 +14,7 @@ General clean ups, TODOs and things I wish to implement for this project:
 * Support Chrome
 * Support Safari
 * Support Edge
+* IN PROGRESS De-react the `div` tag
 * Can we re-assign React.Component to the BaseComponent so that our app's components don't even have to change their `class ... extends`
   to use it and can just continue to use React.Component?
 * DONE Push the calls to "tetherComponents" into BaseComponent using the "constructor trick + Proxy" mechanism I discovered in the

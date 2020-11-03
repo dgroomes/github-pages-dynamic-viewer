@@ -51,17 +51,13 @@ React.createElement = myCreateElement
  */
 function myCreateElement(tagName, options, ...otherArgs) {
     let useReact = true
-    let isAParentNode
     let el
     if (tagName === 'a') {
         useReact = false
-        isAParentNode = false
-        let content = otherArgs[0];
         let href = options.href;
-        console.log(`Creating an element ('a') *without* React. content='${content} href=${href}'`)
+        console.log(`Creating an element ('a') *without* React. href=${href}'`)
         el = document.createElement('a')
         el.href = href;
-        el.innerHTML = content;
     }
 
     // Now we're getting more complicated than when we just had to deal with the 'a' tag. The 'a' element is a
@@ -71,29 +67,24 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // getting confused!
     if (tagName === 'li') {
         useReact = false
-        isAParentNode = otherArgs.length > 0 // I think this needs to be extended to also detect that the the otherArgs are 'undefined' which would indicate that the otherArgs were originally `myCreateElement` invocations (which returns undefined). AND I think we need to keep track of "how *many* children" are there and later tether that many from the "untethered stack"
         console.log("Creating an element ('li') *without* React.")
         el = document.createElement('li');
     }
 
     if (tagName === 'ul') {
         useReact = false
-        isAParentNode = otherArgs.length > 0 // although... by definition this is a "parent node" right? Of course when there happen to be no children than it is not a parent, but by design a "unordered list" element is supposed to contain children
         console.log("Creating an element ('ul') *without* React.")
         el = document.createElement('ul')
     }
 
+    // NOT FULLY IMPLEMENTED
+    //
     // Now, onto the really hard one, the 'div' tag! The div tag is so generic: it can be inside of other elements and
     // it can contain its own arbitrarily large collection of child elements. It's not as closed-loop as 'a' and 'li'.
     //
     // How do we possibly do this? Well, let's cheat and isolate the creation of 'div' tags to only those that opt-in.
     // We will look for the field 'opt-in' in the 'options' argument.
-    //
-    // NOT YET IMPLEMENTED.
-    //
-    // UPDATE: double woops, we should implement 'ul' defore 'div' because it is the closest ancestor to 'li'. I jumped
-    // ahead on accident and didn't even realize it.
-    if (false && tagName === 'div' && options !== null && options["opt-in"]) {
+    if (tagName === 'div' && options !== null && options["opt-in"]) {
         useReact = true
         console.log("Creating an element ('div') *without* React.")
         el = document.createElement('div')
@@ -103,7 +94,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     //
     // This code needs to be updated and fully made to use the new "return value based parent/child association" mechanism
     if (!useReact) {
-        if (isAParentNode) { // can probably factor out "isAParentNode"
+        if (otherArgs.length > 0) {
             console.log(`Detected that this is a parent node (${tagName}). Tethering the child elements now.`)
             // If any of the child elements are actually an array of elements, then they need to be flattened
             let children = otherArgs.flat()
