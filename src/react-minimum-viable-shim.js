@@ -29,6 +29,7 @@ React.createElement = myCreateElement
  * - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters
  * - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax
  * - https://indepth.dev/inside-fiber-in-depth-overview-of-the-new-reconciliation-algorithm-in-react/
+ * - https://stackoverflow.com/a/39165137
  *
  * This is a work-in-progress effort. For some elements, this method use React to create the element, but for other
  * elements it will use my own frameworky JS code to create an "untethered" element and attach it to a parent element

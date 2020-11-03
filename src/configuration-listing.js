@@ -1,7 +1,7 @@
 /**
  * A read-only view of the app's configuration.
  */
-class ConfigurationListing extends React.Component {
+class ConfigurationListing extends BaseComponent {
 
     constructor(props) {
         super(props);
