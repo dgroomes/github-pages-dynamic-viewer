@@ -1,7 +1,11 @@
 // WORK IN PROGRESS
 //
-// This is the minimum viable shim code I need to remove the React library from this application (or rather, this
-// isn't much of an application as it is a simple web page that uses a bit of React features).
+// This is the minimum viable shim code I need to re-implement the React API. What makes this a "minimum viable shim" is
+// that I only need to re-implement enough of the React API so that my app can work. Because it is a toy app, it only
+// uses a small part of React's features, and so I can omit all of those features in the shim's implementation. In other
+// words, this shim is designed only for my own use case and is *not re-usable* by any other project. It is an exercise
+// for my own learning and it does serve as a working example of how to factor out a library dependency in a
+// non-invasive way to an existing codebase.
 
 window.indexCounter = 0
 /*

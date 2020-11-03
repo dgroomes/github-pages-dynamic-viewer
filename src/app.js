@@ -5,8 +5,8 @@ class App extends React.PureComponent {
     }
 
     render() {
-        return myCreateElement('div', null, myCreateElement(SourceBrowser, null));
+        return React.createElement('div', null, React.createElement(SourceBrowser, null));
     }
 }
 
-ReactDOM.render(myCreateElement(App, null), document.getElementById("app"))
+ReactDOM.render(React.createElement(App, null), document.getElementById("app"))
