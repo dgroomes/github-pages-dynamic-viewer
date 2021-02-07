@@ -1,6 +1,6 @@
 'use strict';
 
-class App extends React.PureComponent {
+class App extends BaseComponent {
 
     constructor(props) {
         super(props);
