@@ -7,5 +7,5 @@
 window.config = {
     user: "dgroomes",
     repo: "github-pages-dynamic-viewer",
-    logLevel: "debug"
+    logLevel: "info"
 }

@@ -45,7 +45,7 @@ class BaseComponent extends React.Component {
                     result = function instrumented() {
                         let typePreambleId = addLogPreamble(typePreamble)
                         let propPreambleId = addLogPreamble(prop)
-                        myLog(`an instrumented version of "${prop}" was invoked.`)
+                        myLogDebug(`an instrumented version of "${prop}" was invoked.`)
 
                         if (shouldTether) {
                             tetherElements(receiver)

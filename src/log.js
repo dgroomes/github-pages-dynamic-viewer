@@ -61,8 +61,8 @@ let logLevels = {
     }
 }
 
-let configuredLogLevelRank = logLevels[window.logLevel]
-console.log(`The current log level is '${window.logLevel}' consider lowering it for more logs or raising it for fewer logs.`)
+let configuredLogLevelRank = logLevels[window.config.logLevel].rank
+console.log(`The current log level is '${window.config.logLevel}' consider lowering it for more logs or raising it for fewer logs.`)
 
 /*
  * Compute the complete log preamble from all the log preamble entries and write to the log given the given log function
