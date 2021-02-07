@@ -68,7 +68,7 @@ console.log(`The current log level is '${window.config.logLevel}' consider lower
  * Compute the complete log preamble from all the log preamble entries and write to the log given the given log function
  * (logFn). The log function can be anything but will usually be "console.log", "console.info", "console.warn", "console.error" etc,
  *
- * This is meant to only be called from "myLog" and "myLogError"
+ * This is not meant to be called directly but instead should only be called by the public interface methods: "myLog", "myLogError", etc.
  */
 function _myLog(logLevelDescriptor, ...args) {
 

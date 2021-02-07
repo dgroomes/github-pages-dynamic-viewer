@@ -92,7 +92,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // How do we possibly do this? Well, let's cheat and isolate the creation of 'div' tags to only those that opt-in.
     // We will look for the field 'opt-in' in the 'options' argument.
     if (tagName === 'div' && options !== null && options["opt-in"]) {
-        useReact = true
+        useReact = false
         myLog("Creating an element ('div') *without* React.")
         el = document.createElement('div')
     }
@@ -101,6 +101,9 @@ function myCreateElement(tagName, options, ...otherArgs) {
     //
     // This code needs to be updated and fully made to use the new "return value based parent/child association" mechanism
     if (!useReact) {
+        // Adorn the created element with additional attributes defined in 'options'
+        if (options?.id) el.id = options.id
+
         if (otherArgs.length > 0) {
             myLog(`Detected that this is a parent node (${tagName}). Tethering the child elements now.`)
             // If any of the child elements are actually an array of elements, then they need to be flattened
