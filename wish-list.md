@@ -18,7 +18,7 @@ General clean ups, TODOs and things I wish to implement for this project:
   in a certain pattern 5 times (hence 10=2*5). What's going on? The logs are so noisy it's hard to read.
 * De-react the `h3` tag
 * De-react the `div` tag
-* Defect. The opted-in div tag ("directory-listing") is duplicated in the DOM. There should only be one.  
+* IN PROGRESS Defect. The opted-in div tag ("directory-listing") is duplicated in the DOM. There should only be one.  
 * Can we re-assign React.Component to the BaseComponent so that our app's components don't even have to change their `class ... extends`
   to use it and can just continue to use React.Component?
      

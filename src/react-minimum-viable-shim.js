@@ -192,7 +192,11 @@ function myCreateElement(tagName, options, ...otherArgs) {
 }
 
 /**
- * Tether the groups of untethered elements
+ * Tether the groups of untethered elements.
+ *
+ * This is a post-processing step that is executed *after* React has finally rendered elements to the DOM. Remember, our
+ * vanilla JS framework is implemented around a DOM-model in contrast to React's *virtual* DOM model which I can't hook
+ * into easily (and in fact, I don't know how it is implemented at all so I couldn't even hope to hook into it).
  */
 function tetherElements(component) {
     let componentType = component.constructor.name
@@ -255,7 +259,15 @@ function tetherElements(component) {
 
         while (elements.length > 0) {
             let child = elements.pop()
-            myLog(`Tethering untethered element '${child.tagName}' to '${parent.tagName}`)
+            let childId;
+            if (child.hasAttribute("data-my-created-element-id")) {
+                childId = `myCreatedElementId=${child.getAttribute("data-my-created-element-id")}`
+            } else if (child.hasAttribute("data-react-created-element-id")) {
+                childId = `reactCreatedElementId=${child.getAttribute("data-react-created-element-id")}`
+            } else {
+                throw new Error("Invariant violation. Found neither a my-created-element-id nor a react-created-element-id.")
+            }
+            myLog(`Tethering untethered element '${child.tagName}|${childId}' to '${parent.tagName}`)
             parent.appendChild(child);
         }
     }
