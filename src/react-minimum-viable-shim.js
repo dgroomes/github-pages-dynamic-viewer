@@ -50,6 +50,13 @@ React.createElement = myCreateElement
  * @return either the React-created element or the vanilla JS-created element
  */
 function myCreateElement(tagName, options, ...otherArgs) {
+    let tagNameToString = typeof tagName === 'function' ? `(function) ${tagName.name}` : tagName
+    let tagPreamble = `myCreateElement:${tagNameToString}`;
+    let elId = options?.id
+    if (elId !== undefined) {
+        tagPreamble += ":" + elId
+    }
+    let myCreateElementPreambleId = addLogPreamble(tagPreamble)
     let useReact = true
     let el
     if (tagName === 'a') {
@@ -115,6 +122,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
                 }
             }
         }
+        removeLogPreamble(myCreateElementPreambleId)
         return el
     }
 
@@ -122,7 +130,6 @@ function myCreateElement(tagName, options, ...otherArgs) {
         options = {}
     }
     let index = `${++window.indexCounter}`
-    let tagNameToString = typeof tagName === 'function' ? `(function) ${tagName.name}` : tagName
     myLog(`Creating an element ('${tagNameToString}') using React. Assigning 'data-index' attribute: '${index}'`)
     options['data-index'] = index
 
@@ -169,6 +176,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
         })
     }
 
+    removeLogPreamble(myCreateElementPreambleId)
     return originalReactCreateElement(tagName, options, ...legalArgs)
 }
 

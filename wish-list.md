@@ -14,6 +14,8 @@ General clean ups, TODOs and things I wish to implement for this project:
 * Support Chrome
 * Support Safari
 * Support Edge
+* Defect? From the logs, the `div` tag with ID "directory-listing" is getting created with the shim and with React. This
+  should never happen. Why is it happening?
 * The page has two `h3` elements so why do the logs show that 10 elements are being created? It seems like the logs repeat
   in a certain pattern 5 times (hence 10=2*5). What's going on? The logs are so noisy it's hard to read.
 * De-react the `h3` tag
