@@ -6,6 +6,14 @@ General clean ups, TODOs and things I wish to implement for this project:
    * DONE Remove babel
      * DONE Step one of removing babel is to remove our JSX source code. See [React without JSX](https://reactjs.org/docs/react-without-jsx.html) 
    * IN PROGRESS Remove React
+     * Update: This is really tough. I've created a lot of hand-written replacement framework code and am successfully
+       rendering a lot of the page, but React's lifecycle is something I can't predict. For example, the `ConifgurationListing`
+       component renders its `h3` element 5 times even though the `ConfigurationListing` component is hydrated with static data
+       that never changes throughout the life of the page (it is the values hardcoded in the `config.js` file). So why render
+       5 times? I'm sure there is a reasonable explanation for this. But I have an understanding chasm between what I know
+       and what React is actually doing. My framework assumes that the React lifecycle is something that can be predicted
+       because, for example, it executes a "tethering process" after React is "done" rendering items to the DOM, but as it
+       turns out this "done" concept is rather fluid. I'd like to revisit this, but I have to pause for now.   
    * Remove Marked.js. Instead, we can use GitHub's API to render the markdown
 * Fix up the hash management stuff. This is a bit open-ended. How to make hashes work? I want to be able to click the
   name of a doc from the lefthand nav and have the browser navigate to that fragment. This is just a browser feature. No

@@ -337,3 +337,20 @@ function _debug_listReactCreatedElements() {
         }
     })
 }
+
+/**
+ * Intended for interactive debugging use only in the browser console.
+ *
+ * List all my-created elements in the DOM.
+ */
+function _debug_listMyCreatedElements() {
+    let els = document.querySelectorAll(`[data-my-created-element-id]`)
+    console.log(`Found ${els.length} My-created elements`)
+    return Array.from(els).map(el => {
+        return {
+            tag: el.tagName,
+            reactCreatedElementId: el.getAttribute("data-my-created-element-id"),
+            element: el
+        }
+    })
+}
