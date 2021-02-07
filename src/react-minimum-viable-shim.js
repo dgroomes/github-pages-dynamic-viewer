@@ -98,8 +98,6 @@ function myCreateElement(tagName, options, ...otherArgs) {
     }
 
     // The common code for the attaching of elements created *without* React.
-    //
-    // This code needs to be updated and fully made to use the new "return value based parent/child association" mechanism
     if (!useReact) {
         let myCreatedElementId = window.myCreatedElementId
         window.myCreatedElementId++
@@ -111,17 +109,17 @@ function myCreateElement(tagName, options, ...otherArgs) {
         if (options?.id) el.id = options.id
 
         if (otherArgs.length > 0) {
-            myLog(`Detected that this is a parent node (${tagName}). Tethering the child elements now.`)
+            myLog(`Detected that this is a parent node (${tagName}). Appending the child elements now.`)
             // If any of the child elements are actually an array of elements, then they need to be flattened
             let children = otherArgs.flat()
             for (let i = 0; i < children.length; i++) {
                 let child = children[i]
-                // We want to tether any children elements (specified by the "otherArgs" argument) to this element but we
-                // are unable to tether React elements because React elements aren't real elements yet. I don't think this
+                // We want to append any children elements (specified by the "otherArgs" argument) to this element but we
+                // are unable to append React elements because React elements aren't real elements yet. I don't think this
                 // toy app has this problem as of right now, but I will write some explicit warning logging to help me in
                 // the future if I run into this problem.
                 if (React.isValidElement(child)) {
-                    myLogWarn(`Detected a React element while executing the tethering process. React elements can't be attached to DOM as is. Skipping it. (TODO enhance the tethering process to accommodate React elements).`)
+                    myLogWarn(`Detected a React element while executing the appending process. React elements can't be attached to DOM as is. Skipping it. (TODO enhance the appending process to accommodate React elements).`)
                 } else {
                     if (child instanceof Node) {
                         el.appendChild(child)
