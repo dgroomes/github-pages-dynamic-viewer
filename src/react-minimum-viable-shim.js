@@ -8,9 +8,10 @@
 // non-invasive way to an existing codebase.
 
 /*
- * ID generator for tracking React-created elements.
+ * ID generator for tracking React-created and manually-created (or, "my-created") elements.
  */
 window.reactCreatedElementId = 0
+window.myCreatedElementId = 0
 /*
  * Groups of elements tracked in this variable will be tethered to the DOM after the React lifecycle is done. This is a
  * bridging mechanism between React and the frameworky vanilla JS written in this shim.
@@ -65,7 +66,6 @@ function myCreateElement(tagName, options, ...otherArgs) {
     if (tagName === 'a') {
         useReact = false
         let href = options.href;
-        myLog(`Creating an element ('a') *without* React. href=${href}'`)
         el = document.createElement('a')
         el.href = href;
     }
@@ -77,13 +77,11 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // getting confused!
     if (tagName === 'li') {
         useReact = false
-        myLog("Creating an element ('li') *without* React.")
         el = document.createElement('li');
     }
 
     if (tagName === 'ul') {
         useReact = false
-        myLog("Creating an element ('ul') *without* React.")
         el = document.createElement('ul')
     }
 
@@ -96,7 +94,6 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // We will look for the field 'opt-in' in the 'options' argument.
     if (tagName === 'div' && options !== null && options["opt-in"]) {
         useReact = false
-        myLog("Creating an element ('div') *without* React.")
         el = document.createElement('div')
     }
 
@@ -104,6 +101,12 @@ function myCreateElement(tagName, options, ...otherArgs) {
     //
     // This code needs to be updated and fully made to use the new "return value based parent/child association" mechanism
     if (!useReact) {
+        let myCreatedElementId = window.myCreatedElementId
+        window.myCreatedElementId++
+        el.setAttribute("data-my-created-element-id", myCreatedElementId)
+        let idPreambleId = addLogPreamble(`myCreatedElementId=${myCreatedElementId}`)
+        myLog("Created element *without* React.")
+
         // Adorn the created element with additional attributes defined in 'options'
         if (options?.id) el.id = options.id
 
@@ -128,6 +131,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
                 }
             }
         }
+        removeLogPreamble(idPreambleId)
         removeLogPreamble(myCreateElementPreambleId)
         return el
     }
@@ -137,7 +141,8 @@ function myCreateElement(tagName, options, ...otherArgs) {
     }
     let reactCreatedElementId = window.reactCreatedElementId
     window.reactCreatedElementId++
-    myLog(`Creating an element ('${tagNameToString}') using React. Assigning 'data-react-created-element-id' attribute: '${reactCreatedElementId}'`)
+    let idPreambleId = addLogPreamble(`reactCreatedElementId=${reactCreatedElementId}`)
+    myLog(`Creating an element using React.`)
     options['data-react-created-element-id'] = reactCreatedElementId
 
     // Intercept any incoming "otherArgs" that are illegal arguments to `React.createElement`. Record them as untethered
@@ -183,6 +188,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
         })
     }
 
+    removeLogPreamble(idPreambleId)
     removeLogPreamble(myCreateElementPreambleId)
     return originalReactCreateElement(tagName, options, ...legalArgs)
 }
