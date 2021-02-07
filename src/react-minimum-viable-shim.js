@@ -122,8 +122,11 @@ function myCreateElement(tagName, options, ...otherArgs) {
                     myLogWarn(`Detected a React element while executing the appending process. React elements can't be attached to DOM as is. Skipping it. (TODO enhance the appending process to accommodate React elements).`)
                 } else {
                     if (child instanceof Node) {
+                        let childId = extractXCreatedId(child)
+                        myLog(`Appending child element '${child.tagName}|${childId}'`)
                         el.appendChild(child)
                     } else {
+                        myLogDebug(`Appending child text '${child}'`)
                         el.innerText += child
                     }
                 }
@@ -189,6 +192,20 @@ function myCreateElement(tagName, options, ...otherArgs) {
     removeLogPreamble(idPreambleId)
     removeLogPreamble(myCreateElementPreambleId)
     return originalReactCreateElement(tagName, options, ...legalArgs)
+}
+
+/*
+ * Extract either the 'data-my-created-element-id' or the 'data-react-created-elemented-id' and format in a way appropriate
+ * for logging.
+ */
+function extractXCreatedId(child) {
+    if (child.hasAttribute("data-my-created-element-id")) {
+        return `myCreatedElementId=${child.getAttribute("data-my-created-element-id")}`
+    } else if (child.hasAttribute("data-react-created-element-id")) {
+        return `reactCreatedElementId=${child.getAttribute("data-react-created-element-id")}`
+    } else {
+        throw new Error("Invariant violation. Found neither a my-created-element-id nor a react-created-element-id.")
+    }
 }
 
 /**
@@ -260,13 +277,7 @@ function tetherElements(component) {
         while (elements.length > 0) {
             let child = elements.pop()
             let childId;
-            if (child.hasAttribute("data-my-created-element-id")) {
-                childId = `myCreatedElementId=${child.getAttribute("data-my-created-element-id")}`
-            } else if (child.hasAttribute("data-react-created-element-id")) {
-                childId = `reactCreatedElementId=${child.getAttribute("data-react-created-element-id")}`
-            } else {
-                throw new Error("Invariant violation. Found neither a my-created-element-id nor a react-created-element-id.")
-            }
+            childId = extractXCreatedId(child);
             myLog(`Tethering untethered element '${child.tagName}|${childId}' to '${parent.tagName}`)
             parent.appendChild(child);
         }
