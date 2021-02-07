@@ -21,7 +21,7 @@ window.reactComponents = new Map()
 // Re-define React.createElement
 // Facade the original implementation with our own myCreateElement function
 let originalReactCreateElement = React.createElement
-console.log(`Re-assigning the React.createElement to a custom facade`)
+myLog(`Re-assigning the React.createElement to a custom facade`)
 React.createElement = myCreateElement
 
 /**
@@ -55,7 +55,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     if (tagName === 'a') {
         useReact = false
         let href = options.href;
-        console.log(`Creating an element ('a') *without* React. href=${href}'`)
+        myLog(`Creating an element ('a') *without* React. href=${href}'`)
         el = document.createElement('a')
         el.href = href;
     }
@@ -67,13 +67,13 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // getting confused!
     if (tagName === 'li') {
         useReact = false
-        console.log("Creating an element ('li') *without* React.")
+        myLog("Creating an element ('li') *without* React.")
         el = document.createElement('li');
     }
 
     if (tagName === 'ul') {
         useReact = false
-        console.log("Creating an element ('ul') *without* React.")
+        myLog("Creating an element ('ul') *without* React.")
         el = document.createElement('ul')
     }
 
@@ -86,7 +86,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // We will look for the field 'opt-in' in the 'options' argument.
     if (tagName === 'div' && options !== null && options["opt-in"]) {
         useReact = true
-        console.log("Creating an element ('div') *without* React.")
+        myLog("Creating an element ('div') *without* React.")
         el = document.createElement('div')
     }
 
@@ -95,7 +95,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     // This code needs to be updated and fully made to use the new "return value based parent/child association" mechanism
     if (!useReact) {
         if (otherArgs.length > 0) {
-            console.log(`Detected that this is a parent node (${tagName}). Tethering the child elements now.`)
+            myLog(`Detected that this is a parent node (${tagName}). Tethering the child elements now.`)
             // If any of the child elements are actually an array of elements, then they need to be flattened
             let children = otherArgs.flat()
             for (let i = 0; i < children.length; i++) {
@@ -105,7 +105,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
                 // toy app has this problem as of right now, but I will write some explicit warning logging to help me in
                 // the future if I run into this problem.
                 if (React.isValidElement(child)) {
-                    console.warn(`Detected a React element while executing the tethering process. React elements can't be attached to DOM as is. Skipping it. (TODO enhance the tethering process to accommodate React elements).`)
+                    myLogWarn(`Detected a React element while executing the tethering process. React elements can't be attached to DOM as is. Skipping it. (TODO enhance the tethering process to accommodate React elements).`)
                 } else {
                     if (child instanceof Node) {
                         el.appendChild(child)
@@ -123,7 +123,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     }
     let index = `${++window.indexCounter}`
     let tagNameToString = typeof tagName === 'function' ? `(function) ${tagName.name}` : tagName
-    console.log(`Creating an element ('${tagNameToString}') using React. Assigning 'data-index' attribute: '${index}'`)
+    myLog(`Creating an element ('${tagNameToString}') using React. Assigning 'data-index' attribute: '${index}'`)
     options['data-index'] = index
 
     // Intercept any incoming "otherArgs" that are illegal arguments to `React.createElement`. Record them as untethered
@@ -144,7 +144,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
                 if (isLegalNonArrayElement(nestedArg)) {
                     nestedLegalArgs.push(nestedArg)
                 } else {
-                    console.log(`Detected illegal argument (${nestedArg.tagName}) within an Array in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
+                    myLog(`Detected illegal argument (${nestedArg.tagName}) within an Array in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
                     nestedUntetheredElements.push(nestedArg)
                 }
             })
@@ -157,7 +157,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
         } else if (isLegalNonArrayElement(arg)) {
             legalArgs.push(arg)
         } else {
-            console.log(`Detected illegal argument (${arg.tagName}) in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
+            myLog(`Detected illegal argument (${arg.tagName}) in the request to 'React.createElement' for '${tagNameToString}'. Filtering it out and instead recording it as an untethered element so that it can later be tethered to this element ('${tagNameToString}') after React is done doing it's thing.`)
             untetheredElements.push(arg)
         }
     }
@@ -177,30 +177,34 @@ function myCreateElement(tagName, options, ...otherArgs) {
  */
 function tetherElements(component) {
     let componentType = component.constructor.name
-    let preamble = `[tetherElements ${componentType}]: `
+    let preamble = "tetherElements"
+    let preambleId = addLogPreamble(preamble)
 
     let metaData = window.reactComponents.get(component);
     if (metaData === undefined) {
-        console.error(`${preamble}Failed to find the meta data for the component`)
+        myLogError(`Failed to find the meta data for the component`)
     } else {
-        console.info(`${preamble}This component's meta data: ${JSON.stringify(metaData, null, 2)}`)
+        myLog(`This component's meta data: ${JSON.stringify(metaData, null, 2)}`)
         if (metaData.hasTethered) {
-            console.info(`${preamble}This component has already executed the tethering process. Skipping it.`)
+            myLog(`This component has already executed the tethering process. Skipping it.`)
+            removeLogPreamble(preambleId)
             return
         }
     }
 
     if (window.untetheredElements.length === 0) {
-        console.log(`${preamble}There are no elements to tether`)
+        myLog(`There are no elements to tether`)
+        removeLogPreamble(preambleId)
         return
     }
 
     for (let i = 0; i < window.untetheredElements.length; i++) {
         let {elements, parentElementIndex} = window.untetheredElements[i]
-        console.log(`${preamble}Tethering untethered elements (${elements.length})`)
+        myLog(`Tethering untethered elements (${elements.length})`)
         let parent = document.querySelector(`[data-index="${parentElementIndex}"]`)
         if (parent === null) {
-            console.error(`${preamble}Something went wrong. Did not find an element for id ${parentElementIndex}. So, the untethered elements will remain untethered (sad).`)
+            myLogError(`Something went wrong. Did not find an element for id ${parentElementIndex}. So, the untethered elements will remain untethered (sad).`)
+            removeLogPreamble(preambleId)
             return;
         }
 
@@ -210,19 +214,20 @@ function tetherElements(component) {
          */
         let targetComponent = findReactAncestor(parent);
         if (targetComponent === null) {
-            console.error(`${preamble}Something went wrong. Did not find an ancestor React component for the given DOM element`)
+            myLogError(`Something went wrong. Did not find an ancestor React component for the given DOM element`)
+            removeLogPreamble(preambleId)
             return;
         }
         let targetComponentMetaData
         if (targetComponent === component) {
-            console.info(`${preamble}The target component is the same as the overall component`)
+            myLog(`The target component is the same as the overall component`)
             targetComponentMetaData = metaData
         } else {
             targetComponentMetaData = window.reactComponents.get(targetComponent)
         }
 
         if (targetComponentMetaData.hasTethered) {
-            console.info(`${preamble}This component has already executed the tethering process. Skipping it.`)
+            myLog(`This component has already executed the tethering process. Skipping it.`)
             continue
         }
 
@@ -231,7 +236,7 @@ function tetherElements(component) {
 
         while (elements.length > 0) {
             let child = elements.pop()
-            console.log(`${preamble}Tethering untethered element '${child.tagName}' to '${parent.tagName}`)
+            myLog(`Tethering untethered element '${child.tagName}' to '${parent.tagName}`)
             parent.appendChild(child);
         }
     }
@@ -242,6 +247,8 @@ function tetherElements(component) {
 
     // Mark this component as initialized ("hasTethered = true")
     metaData.hasTethered = true
+
+    removeLogPreamble(preambleId)
 }
 
 /**

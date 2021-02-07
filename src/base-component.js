@@ -18,28 +18,53 @@ class BaseComponent extends React.Component {
             hasTethered: false
         }
 
+        /**
+         * The methods that we want to instrument on the underlying React.Component parent class.
+         * The key is the method name. The value is a boolean indicating whether or not to call "tetherElements"
+         * before invoking the method.
+         */
+        let instrumentedMethods = {
+            componentDidUpdate: true,
+            componentDidMount: true,
+            render: false
+        }
+
         let handler = {
             get: function (target, prop, receiver) {
                 let targetType = target.constructor.name
-                let preamble = `[BaseComponent/${targetType}]: `
+                let preamble = targetType
+                let preambleId = addLogPreamble(preamble)
 
                 let resolvedProp = Reflect.get(...arguments)
 
-                if (["componentDidUpdate", "componentDidMount"].includes(prop)) {
-                    console.log(`${preamble}"${prop}" was accessed. Instrumenting a pointcut/aspect around it`)
-                    return function instrumented() {
-                        console.log(`${preamble}an instrumented version of "${prop}" was invoked.`)
-                        tetherElements(receiver)
+                let result
+                if (instrumentedMethods.hasOwnProperty(prop)) {
+                    let shouldTether = instrumentedMethods[prop]
+                    myLog(`"${prop}" was accessed. Instrumenting a pointcut/aspect around it`)
 
-                        if (resolvedProp !== undefined) {
-                            return resolvedProp.bind(receiver)(...arguments)  // whoa! this is some out-of-control framework code!
-                        } else {
-                            return undefined
+                    result = function instrumented() {
+                        let preambleId = addLogPreamble(preamble)
+                        myLog(`an instrumented version of "${prop}" was invoked.`)
+
+                        if (shouldTether) {
+                            tetherElements(receiver)
                         }
+
+                        let result
+                        if (resolvedProp !== undefined) {
+                            result = resolvedProp.bind(receiver)(...arguments)  // whoa! this is some out-of-control framework code!
+                        } else {
+                            result = undefined
+                        }
+                        removeLogPreamble(preambleId)
+                        return result
                     }
                 } else {
-                    return resolvedProp
+                    result = resolvedProp
                 }
+
+                removeLogPreamble(preambleId)
+                return result
             }
         }
 

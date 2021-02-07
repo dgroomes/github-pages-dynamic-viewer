@@ -14,7 +14,10 @@ General clean ups, TODOs and things I wish to implement for this project:
 * Support Chrome
 * Support Safari
 * Support Edge
-* IN PROGRESS De-react the `div` tag
+* The page has two `h3` elements so why do the logs show that 10 elements are being created? It seems like the logs repeat
+  in a certain pattern 5 times (hence 10=2*5). What's going on? The logs are so noisy it's hard to read.
+* De-react the `h3` tag
+* De-react the `div` tag
 * Can we re-assign React.Component to the BaseComponent so that our app's components don't even have to change their `class ... extends`
   to use it and can just continue to use React.Component?
      
@@ -84,3 +87,5 @@ General clean ups, TODOs and things I wish to implement for this project:
         * Do the "gate" thing described in "Design idea 2b.2"          
 * DONE Push the calls to "tetherComponents" into BaseComponent using the "constructor trick + Proxy" mechanism I discovered in the
   prototype branch instead of in the component classes themselves via `componentDidUpdate`
+* DONE define a small logging framework (yikes!) to help me understand what the heck this code is doing. Ironically, the
+  code becomes even more complex now...
