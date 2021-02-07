@@ -17,8 +17,6 @@ General clean ups, TODOs and things I wish to implement for this project:
 * IN PROGRESS De-react the `div` tag
 * Can we re-assign React.Component to the BaseComponent so that our app's components don't even have to change their `class ... extends`
   to use it and can just continue to use React.Component?
-* DONE Push the calls to "tetherComponents" into BaseComponent using the "constructor trick + Proxy" mechanism I discovered in the
-  prototype branch instead of in the component classes themselves via `componentDidUpdate`
      
 ### Finished *Wish List* items
 
@@ -84,3 +82,5 @@ General clean ups, TODOs and things I wish to implement for this project:
     * DONE Design idea #3: Can we proxy the `render` method and add our own pointcut? That's all we really want, so we can
       add code to only actually execute it once. ANSWER: yes we can! See `base-component.js`.
         * Do the "gate" thing described in "Design idea 2b.2"          
+* DONE Push the calls to "tetherComponents" into BaseComponent using the "constructor trick + Proxy" mechanism I discovered in the
+  prototype branch instead of in the component classes themselves via `componentDidUpdate`

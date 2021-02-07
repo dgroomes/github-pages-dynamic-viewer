@@ -35,17 +35,17 @@ React.createElement = myCreateElement
  * - https://indepth.dev/inside-fiber-in-depth-overview-of-the-new-reconciliation-algorithm-in-react/
  * - https://stackoverflow.com/a/39165137
  *
- * This is a work-in-progress effort. For some elements, this method use React to create the element, but for other
+ * This is a work-in-progress effort. For some elements, this method uses React to create the element, but for other
  * elements it will use my own frameworky JS code to create an "untethered" element and attach it to a parent element
  * via a callback that gets executed after React is done with its lifecycle. Why so complicated? It's complicated because
  * I am trying to implement this with the constraint that the source code of the `SourceBrowser` class can remain
  * untouched (as much as feasible). In other words, this is a proof-of-concept to show how you might execute a gradual
- * refactoring of a medium to large React application to *gradually remove all React code*. Unfortunately, I did have to
- * add some code into the SourceBrowser class in its 'componentDidUpdate' function, but if I could research more I think
- * there must be some global way I could hook into React to wire in my own frameworky code, but I don't have enough time
- * to research that right now.
+ * refactoring of a medium to large React application to *gradually remove all React code*. The only code change that is
+ * needed in the application's custom components is to replace the `extends React.Component` with `extends BaseComponent`.
+ * In a perfect world, even that would not be necessary, but I don't know how to get around it.
  *
- * Cases supported: anchor tags (`<a>`), list item tags (`<li>`), unordered list tags (`<ul>`)
+ * Cases supported: anchor tags (`<a>`), list item tags (`<li>`), unordered list tags (`<ul>`) and partial support for
+ * content division tags (`<div>`)
  *
  * @return either the React-created element or the vanilla JS-created element
  */
@@ -240,7 +240,7 @@ function tetherElements(component) {
     // "untethered elements" reference
     window.untetheredElements = []
 
-    // Mark this component has initialized ("hasTethered = true")
+    // Mark this component as initialized ("hasTethered = true")
     metaData.hasTethered = true
 }
 
