@@ -6,5 +6,6 @@
  */
 window.config = {
     user: "dgroomes",
-    repo: "github-pages-dynamic-viewer"
+    repo: "github-pages-dynamic-viewer",
+    logLevel: "debug"
 }

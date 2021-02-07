@@ -32,18 +32,19 @@ class BaseComponent extends React.Component {
         let handler = {
             get: function (target, prop, receiver) {
                 let targetType = target.constructor.name
-                let preamble = targetType
-                let preambleId = addLogPreamble(preamble)
+                let typePreamble = targetType
+                let typePreambleId = addLogPreamble(targetType)
 
                 let resolvedProp = Reflect.get(...arguments)
 
                 let result
                 if (instrumentedMethods.hasOwnProperty(prop)) {
                     let shouldTether = instrumentedMethods[prop]
-                    myLog(`"${prop}" was accessed. Instrumenting a pointcut/aspect around it`)
+                    myLogDebug(`"${prop}" was accessed. Instrumenting a pointcut/aspect around it`)
 
                     result = function instrumented() {
-                        let preambleId = addLogPreamble(preamble)
+                        let typePreambleId = addLogPreamble(typePreamble)
+                        let propPreambleId = addLogPreamble(prop)
                         myLog(`an instrumented version of "${prop}" was invoked.`)
 
                         if (shouldTether) {
@@ -56,14 +57,15 @@ class BaseComponent extends React.Component {
                         } else {
                             result = undefined
                         }
-                        removeLogPreamble(preambleId)
+                        removeLogPreamble(propPreambleId)
+                        removeLogPreamble(typePreambleId)
                         return result
                     }
                 } else {
                     result = resolvedProp
                 }
 
-                removeLogPreamble(preambleId)
+                removeLogPreamble(typePreambleId)
                 return result
             }
         }

@@ -40,12 +40,46 @@ function removeLogPreamble(id) {
 }
 
 /*
+ * Note: lower levels are more verbose. (I always have a hard time remember if "lower" or "higher" means "more" logs or "fewer" logs...)
+ */
+let logLevels = {
+    "debug": {
+        rank: 0,
+        logFn: console.info // I don't know how the actual browser log levels can be configured so I'm making my own and coding the "info" level even for debug logs.
+    },
+    "info": {
+        rank: 1,
+        logFn: console.info
+    },
+    "warn": {
+        rank: 2,
+        logFn: console.warn
+    },
+    "error": {
+        rank: 3,
+        logFn: console.error
+    }
+}
+
+let configuredLogLevelRank = logLevels[window.logLevel]
+console.log(`The current log level is '${window.logLevel}' consider lowering it for more logs or raising it for fewer logs.`)
+
+/*
  * Compute the complete log preamble from all the log preamble entries and write to the log given the given log function
  * (logFn). The log function can be anything but will usually be "console.log", "console.info", "console.warn", "console.error" etc,
  *
  * This is meant to only be called from "myLog" and "myLogError"
  */
-function _myLog(logFn, ...args) {
+function _myLog(logLevelDescriptor, ...args) {
+
+    let logLevel = logLevels[logLevelDescriptor]
+    let logFn = logLevel.logFn
+
+    if (configuredLogLevelRank > logLevel.rank) {
+        // Skip the log. The configured log level rank is too high. This log statement should be filtered out.
+        return
+    }
+
 
     if (logPreambles.size === 0) {
         logFn(...args)
@@ -71,14 +105,18 @@ function _myLog(logFn, ...args) {
  * Wrappers for "console.log", "console.warn", "console.error" etc that will do the log and also prepend
  * the log preambles data if it exists.
  */
+function myLogDebug() {
+    _myLog("debug", ...arguments)
+}
+
 function myLog() {
-    _myLog(console.log, ...arguments)
+    _myLog("info", ...arguments)
 }
 
 function myLogWarn() {
-    _myLog(console.warn, ...arguments)
+    _myLog("warn", ...arguments)
 }
 
 function myLogError() {
-    _myLog(console.error, ...arguments)
+    _myLog("error", ...arguments)
 }
