@@ -278,7 +278,8 @@ function tetherElements(component) {
             let child = elements.pop()
             let childId;
             childId = extractXCreatedId(child);
-            myLog(`Tethering untethered element '${child.tagName}|${childId}' to '${parent.tagName}`)
+            parentId = extractXCreatedId(parent);
+            myLog(`Tethering untethered element '${child.tagName}|${childId}' to '${parent.tagName}|${parentId}'`)
             parent.appendChild(child);
         }
     }
@@ -317,4 +318,22 @@ function findReactAncestor(dom, traverseUp = 0) {
         compFiber = GetCompFiber(compFiber);
     }
     return compFiber.stateNode;
+}
+
+
+/**
+ * Intended for interactive debugging use only in the browser console.
+ *
+ * List all React-created elements in the DOM.
+ */
+function _debug_listReactCreatedElements() {
+    let els = document.querySelectorAll(`[data-react-created-element-id]`)
+    console.log(`Found ${els.length} React-created elements`)
+    return Array.from(els).map(el => {
+        return {
+            tag: el.tagName,
+            reactCreatedElementId: el.getAttribute("data-react-created-element-id"),
+            element: el
+        }
+    })
 }
