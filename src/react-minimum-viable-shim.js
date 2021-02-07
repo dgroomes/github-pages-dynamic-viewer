@@ -7,7 +7,10 @@
 // for my own learning and it does serve as a working example of how to factor out a library dependency in a
 // non-invasive way to an existing codebase.
 
-window.indexCounter = 0
+/*
+ * ID generator for tracking React-created elements.
+ */
+window.reactCreatedElementId = 0
 /*
  * Groups of elements tracked in this variable will be tethered to the DOM after the React lifecycle is done. This is a
  * bridging mechanism between React and the frameworky vanilla JS written in this shim.
@@ -132,9 +135,10 @@ function myCreateElement(tagName, options, ...otherArgs) {
     if (options == null) {
         options = {}
     }
-    let index = `${++window.indexCounter}`
-    myLog(`Creating an element ('${tagNameToString}') using React. Assigning 'data-index' attribute: '${index}'`)
-    options['data-index'] = index
+    let reactCreatedElementId = window.reactCreatedElementId
+    window.reactCreatedElementId++
+    myLog(`Creating an element ('${tagNameToString}') using React. Assigning 'data-react-created-element-id' attribute: '${reactCreatedElementId}'`)
+    options['data-react-created-element-id'] = reactCreatedElementId
 
     // Intercept any incoming "otherArgs" that are illegal arguments to `React.createElement`. Record them as untethered
     // elements so that they will be later tethered to the DOM.
@@ -175,7 +179,7 @@ function myCreateElement(tagName, options, ...otherArgs) {
     if (untetheredElements.length > 0) {
         window.untetheredElements.push({
             elements: untetheredElements,
-            parentElementIndex: index
+            parentReactCreatedElementId: reactCreatedElementId
         })
     }
 
@@ -210,11 +214,11 @@ function tetherElements(component) {
     }
 
     for (let i = 0; i < window.untetheredElements.length; i++) {
-        let {elements, parentElementIndex} = window.untetheredElements[i]
+        let {elements, parentReactCreatedElementId} = window.untetheredElements[i]
         myLog(`Tethering untethered elements (${elements.length})`)
-        let parent = document.querySelector(`[data-index="${parentElementIndex}"]`)
+        let parent = document.querySelector(`[data-react-created-element-id="${parentReactCreatedElementId}"]`)
         if (parent === null) {
-            myLogError(`Something went wrong. Did not find an element for id ${parentElementIndex}. So, the untethered elements will remain untethered (sad).`)
+            myLogError(`Something went wrong. Did not find an element for id ${parentReactCreatedElementId}. So, the untethered elements will remain untethered (sad).`)
             removeLogPreamble(preambleId)
             return;
         }
